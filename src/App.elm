@@ -15,14 +15,14 @@ type Msg
 
 
 type alias Model =
-  { user : Maybe User
+  { user : UserHome.Model
   , loginScreen : LoginScreen.Model
   }
 
 
 initialModel : Model
 initialModel =
-  { user = Nothing
+  { user = UserHome.initialModel
   , loginScreen = LoginScreen.initialModel
   }
 
@@ -35,7 +35,7 @@ update msg model =
         ( loginScreen, cmd ) = LoginScreen.update subMsg model.loginScreen
 
       in
-        ( { model | loginScreen = loginScreen, user = Just (User 42 "bob") }, Cmd.map LoginMsg cmd )
+        ( { model | loginScreen = loginScreen, user = UserHome.Model (Just (User 42 "bob")) "bob" }, Cmd.map LoginMsg cmd )
 
     UserMsg subMsg ->
       let
@@ -47,7 +47,7 @@ update msg model =
 
 view : Model -> Html.Html Msg
 view model =
-  case model.user of
+  case model.user.user of
     Just user -> renderUserHome model
     Nothing -> renderLoginScreen model
 
