@@ -35,7 +35,7 @@ update msg model =
         ( loginScreen, cmd ) = LoginScreen.update subMsg model.loginScreen
 
       in
-        ( { model | loginScreen = loginScreen, user = Just (UserHome.Model (User 42 "bob") "bob") }, Cmd.map LoginMsg cmd )
+        ( { model | loginScreen = loginScreen }, Cmd.map LoginMsg cmd )
 
     UserMsg subMsg ->
       if subMsg == UserHome.Logout
