@@ -25,6 +25,13 @@ initialModel =
   }
 
 
+modelFor : User -> Model
+modelFor user =
+  { user = user
+  , username = user.username
+  }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of

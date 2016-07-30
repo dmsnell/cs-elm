@@ -3,7 +3,6 @@ module Pages.LoginScreen exposing (..)
 import Html exposing (div, text)
 import Html.App
 import Http
-import Debug
 import Task exposing (Task)
 import Json.Decode as Decode
 
@@ -18,7 +17,7 @@ type Msg
 
 type alias Model
   = { loginForm : Dialog.Model
-    , response : String
+    , apiKey : Maybe String
     , error : Maybe String
     }
 
@@ -26,7 +25,7 @@ type alias Model
 initialModel : Model
 initialModel
   = { loginForm = Dialog.initialModel
-    , response = ""
+    , apiKey = Nothing
     , error = Nothing
     }
 
@@ -70,11 +69,14 @@ update msg model =
 
           ( apiKey, error ) =
             case Decode.decodeString (Decode.at [ "apiKey" ] Decode.string) json of
-              Ok v -> ( v, Nothing )
-              Err e -> ( "", Just "Invalid email and password combination" )
+              Ok v -> ( Just v, Nothing )
+              Err e -> ( Nothing, Just "Invalid email and password combination" )
 
       in
-          ( { model | response = apiKey, error = error }, Debug.log apiKey Cmd.none )
+          ( { model
+                | apiKey = apiKey
+                , error = error
+                }, Cmd.none )
 
     FetchError error ->
         case error of

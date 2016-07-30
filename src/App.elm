@@ -13,15 +13,21 @@ type Msg
   = LoginMsg LoginScreen.Msg
   | UserMsg UserHome.Msg
 
+type UserStatus
+  = LoggedOut
+  | LoggedIn User
+
 type alias Model =
-  { user : Maybe UserHome.Model
+  { userStatus : UserStatus
+  , user : Maybe UserHome.Model
   , loginScreen : LoginScreen.Model
   }
 
 
 initialModel : Model
 initialModel =
-  { user = Nothing
+  { userStatus = LoggedOut
+  , user = Nothing
   , loginScreen = LoginScreen.initialModel
   }
 
@@ -33,14 +39,24 @@ update msg model =
       let
         ( loginScreen, cmd ) = LoginScreen.update subMsg model.loginScreen
 
+        userStatus = case loginScreen.apiKey of
+            Nothing -> LoggedOut
+            Just apiKey -> LoggedIn (User 42 "Bob")
+
       in
-        ( { model | loginScreen = loginScreen }, Cmd.map LoginMsg cmd )
+        ( { model
+            | loginScreen = loginScreen
+            , userStatus = userStatus
+            }, Cmd.map LoginMsg cmd )
 
     UserMsg subMsg ->
       if subMsg == UserHome.Logout
 
       then
-        ( { model | user = Nothing }, Cmd.none )
+        ( { model
+            | userStatus = LoggedOut
+            , user = Nothing
+            }, Cmd.none )
 
       else
         case model.user of
@@ -56,9 +72,9 @@ update msg model =
 
 view : Model -> Html.Html Msg
 view model =
-  case model.user of
-    Just user -> renderUserHome user
-    Nothing -> renderLoginScreen model
+  case model.userStatus of
+    LoggedIn user -> renderUserHome (UserHome.modelFor user)
+    LoggedOut -> renderLoginScreen model
 
 
 renderUserHome : UserHome.Model -> Html.Html Msg
