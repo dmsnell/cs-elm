@@ -13,7 +13,6 @@ type Msg
   = LoginMsg LoginScreen.Msg
   | UserMsg UserHome.Msg
 
-
 type alias Model =
   { user : Maybe UserHome.Model
   , loginScreen : LoginScreen.Model
