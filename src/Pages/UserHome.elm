@@ -4,7 +4,7 @@ import Html exposing (button, div, input, label, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 
-import Models.User exposing (User)
+import Models.User exposing (User, emptyUser)
 
 type Msg
   = Logout
@@ -13,14 +13,14 @@ type Msg
 
 
 type alias Model =
-  { user : Maybe User
+  { user : User
   , username : String
   }
 
 
 initialModel : Model
 initialModel =
-  { user = Nothing
+  { user = emptyUser
   , username = ""
   }
 
@@ -29,16 +29,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
     Logout ->
-      ( { model | user = Nothing }, Cmd.none )
+      ( model, Cmd.none )
 
     ChangeUsername ->
-      let newUser =
-        case model.user of
-          Nothing ->
-            Nothing
+      let oldUser = model.user
 
-          Just user ->
-            Just { user | username = model.username }
+          newUser =
+            { oldUser | username = model.username }
 
       in
         ( { model | user = newUser }, Cmd.none )
@@ -49,18 +46,12 @@ update msg model =
 
 view : Model -> Html.Html Msg
 view model =
-  case model.user of
-    Nothing ->
-      div []
-          [ text "Loading user…" ]
-
-    Just user ->
-      div []
-          [ div [] [ text ("Hi " ++ user.username) ]
-          , div []
-                [ label [ for "username" ] [ text "Username:" ]
-                , input [ name "username", value model.username, onInput UpdateUsernameField ] []
-                ]
-          , div [] [ button [ onClick ChangeUsername ] [ text "Renew" ] ]
-          , div [] [ button [ onClick Logout ] [ text "Logout" ] ]
-          ]
+  div []
+      [ div [] [ text ("Hi " ++ model.user.username) ]
+      , div []
+            [ label [ for "username" ] [ text "Username:" ]
+            , input [ name "username", value model.username, onInput UpdateUsernameField ] []
+            ]
+      , div [] [ button [ onClick ChangeUsername ] [ text "Renew" ] ]
+      , div [] [ button [ onClick Logout ] [ text "Logout" ] ]
+      ]

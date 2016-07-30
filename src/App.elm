@@ -15,14 +15,14 @@ type Msg
 
 
 type alias Model =
-  { user : UserHome.Model
+  { user : Maybe UserHome.Model
   , loginScreen : LoginScreen.Model
   }
 
 
 initialModel : Model
 initialModel =
-  { user = UserHome.initialModel
+  { user = Nothing
   , loginScreen = LoginScreen.initialModel
   }
 
@@ -35,26 +35,36 @@ update msg model =
         ( loginScreen, cmd ) = LoginScreen.update subMsg model.loginScreen
 
       in
-        ( { model | loginScreen = loginScreen, user = UserHome.Model (Just (User 42 "bob")) "bob" }, Cmd.map LoginMsg cmd )
+        ( { model | loginScreen = loginScreen, user = Just (UserHome.Model (User 42 "bob") "bob") }, Cmd.map LoginMsg cmd )
 
     UserMsg subMsg ->
-      let
-        ( user, cmd ) = UserHome.update subMsg model.user
+      if subMsg == UserHome.Logout
 
-      in
-        ( { model | user = user }, Cmd.map UserMsg cmd )
+      then
+        ( { model | user = Nothing }, Cmd.none )
+
+      else
+        case model.user of
+          Nothing -> ( model, Cmd.none )
+
+          Just oldUser ->
+            let
+              ( user, cmd ) = UserHome.update subMsg oldUser
+
+            in
+              ( { model | user = Just user }, Cmd.map UserMsg cmd )
 
 
 view : Model -> Html.Html Msg
 view model =
-  case model.user.user of
-    Just user -> renderUserHome model
+  case model.user of
+    Just user -> renderUserHome user
     Nothing -> renderLoginScreen model
 
 
-renderUserHome : Model -> Html.Html Msg
-renderUserHome model =
-  Html.App.map UserMsg (UserHome.view model.user)
+renderUserHome : UserHome.Model -> Html.Html Msg
+renderUserHome user =
+      Html.App.map UserMsg (UserHome.view user)
 
 
 renderLoginScreen : Model -> Html.Html Msg
