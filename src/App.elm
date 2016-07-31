@@ -19,7 +19,7 @@ type UserStatus
 
 type alias Model =
   { userStatus : UserStatus
-  , user : Maybe UserHome.Model
+  , user : UserHome.Model
   , loginScreen : LoginScreen.Model
   }
 
@@ -27,7 +27,7 @@ type alias Model =
 initialModel : Model
 initialModel =
   { userStatus = LoggedOut
-  , user = Nothing
+  , user = UserHome.initialModel
   , loginScreen = LoginScreen.initialModel
   }
 
@@ -55,36 +55,42 @@ update msg model =
       then
         ( { model
             | userStatus = LoggedOut
-            , user = Nothing
+            , user = UserHome.initialModel
             }, Cmd.none )
 
+      else if subMsg == UserHome.ChangeUsername
+
+      then
+        case model.userStatus of
+          LoggedOut -> ( model, Cmd.none )
+          LoggedIn user ->
+            ( { model
+                | userStatus = LoggedIn { user | username = model.user.username }
+                }, Cmd.none )
+
       else
-        case model.user of
-          Nothing -> ( model, Cmd.none )
+        let
+          ( user, cmd ) = UserHome.update subMsg model.user
 
-          Just oldUser ->
-            let
-              ( user, cmd ) = UserHome.update subMsg oldUser
-
-            in
-              ( { model | user = Just user }, Cmd.map UserMsg cmd )
+        in
+          ( { model | user = user }, Cmd.map UserMsg cmd )
 
 
 view : Model -> Html.Html Msg
 view model =
   case model.userStatus of
-    LoggedIn user -> renderUserHome (UserHome.modelFor user)
-    LoggedOut -> renderLoginScreen model
+    LoggedIn user -> renderUserHome model.user user
+    LoggedOut -> renderLoginScreen model.loginScreen
 
 
-renderUserHome : UserHome.Model -> Html.Html Msg
-renderUserHome user =
-      Html.App.map UserMsg (UserHome.view user)
+renderUserHome : UserHome.Model -> User -> Html.Html Msg
+renderUserHome userModel user  =
+      Html.App.map UserMsg (UserHome.view userModel user)
 
 
-renderLoginScreen : Model -> Html.Html Msg
+renderLoginScreen : LoginScreen.Model -> Html.Html Msg
 renderLoginScreen model =
-  Html.App.map LoginMsg (LoginScreen.view model.loginScreen)
+  Html.App.map LoginMsg (LoginScreen.view model)
 
 
 main =
