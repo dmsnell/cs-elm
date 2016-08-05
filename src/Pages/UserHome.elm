@@ -13,13 +13,13 @@ type Msg
 
 
 type alias Model =
-  { username : String
+  { email : String
   }
 
 
 initialModel : Model
 initialModel =
-  { username = ""
+  { email = ""
   }
 
 
@@ -33,16 +33,16 @@ update msg model =
       ( model, Cmd.none )
 
     UpdateUsernameField value ->
-      ( { model | username = value }, Cmd.none )
+      ( { model | email = value }, Cmd.none )
 
 
 view : Model -> User -> Html.Html Msg
 view model user =
   div []
-      [ div [] [ text ("Hi " ++ user.username) ]
+      [ div [] [ text ("Hi " ++ user.email) ]
       , div []
             [ label [ for "username" ] [ text "Username:" ]
-            , input [ name "username", value model.username, onInput UpdateUsernameField ] []
+            , input [ name "username", value model.email, onInput UpdateUsernameField ] []
             ]
       , div [] [ button [ onClick ChangeUsername ] [ text "Renew" ] ]
       , div [] [ button [ onClick Logout ] [ text "Logout" ] ]

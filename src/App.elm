@@ -63,7 +63,7 @@ update msg model =
             LoggedOut -> ( model, Cmd.none )
             LoggedIn user ->
               ( { model
-                  | userStatus = LoggedIn { user | username = model.user.username }
+                  | userStatus = LoggedIn { user | email = model.user.email }
                   }, Cmd.none )
 
         _ ->

@@ -4,9 +4,11 @@ import Html exposing (div, text)
 import Html.App
 import Http
 import Task exposing (Task)
-import Json.Decode as Decode
+import Json.Decode
 
 import Components.LoginDialog as Dialog
+import Decoders.AuthenticationResponse exposing (decodeAuthenitcationResponse)
+import Models.AuthenticationResponse exposing (AuthenticationResponse, emptyResponse)
 
 
 type Msg
@@ -65,12 +67,18 @@ update msg model =
     FetchSuccess response ->
       let json = case response.value of
             Http.Text s -> s
-            _ -> "{apiKey: ''}"
+            _ -> "{apiKey: '', user: {}}"
 
-          ( apiKey, error ) =
-            case Decode.decodeString (Decode.at [ "apiKey" ] Decode.string) json of
-              Ok v -> ( Just v, Nothing )
-              Err e -> ( Nothing, Just "Invalid email and password combination" )
+          authResponse =
+            Json.Decode.decodeString decodeAuthenitcationResponse json
+
+          (apiKey, error) =
+            case authResponse of
+              Ok response ->
+                (Just response.apiKey, Nothing)
+
+              Err e ->
+                (Nothing, Just e)
 
       in
           ( { model
