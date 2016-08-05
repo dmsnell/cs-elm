@@ -50,30 +50,28 @@ update msg model =
             }, Cmd.map LoginMsg cmd )
 
     UserMsg subMsg ->
-      if subMsg == UserHome.Logout
+      case subMsg of
+        UserHome.Logout ->
+          ( { model
+              | userStatus = LoggedOut
+              , user = UserHome.initialModel
+              , loginScreen = LoginScreen.initialModel
+              }, Cmd.none )
 
-      then
-        ( { model
-            | userStatus = LoggedOut
-            , user = UserHome.initialModel
-            }, Cmd.none )
+        UserHome.ChangeUsername ->
+          case model.userStatus of
+            LoggedOut -> ( model, Cmd.none )
+            LoggedIn user ->
+              ( { model
+                  | userStatus = LoggedIn { user | username = model.user.username }
+                  }, Cmd.none )
 
-      else if subMsg == UserHome.ChangeUsername
+        _ ->
+          let
+            ( user, cmd ) = UserHome.update subMsg model.user
 
-      then
-        case model.userStatus of
-          LoggedOut -> ( model, Cmd.none )
-          LoggedIn user ->
-            ( { model
-                | userStatus = LoggedIn { user | username = model.user.username }
-                }, Cmd.none )
-
-      else
-        let
-          ( user, cmd ) = UserHome.update subMsg model.user
-
-        in
-          ( { model | user = user }, Cmd.map UserMsg cmd )
+          in
+            ( { model | user = user }, Cmd.map UserMsg cmd )
 
 
 view : Model -> Html.Html Msg
