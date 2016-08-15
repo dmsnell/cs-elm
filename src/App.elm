@@ -12,13 +12,13 @@ type Msg
     | UserMsg UserHome.Msg
 
 
-type UserStatus
+type AuthenticationStatus
     = LoggedOut
     | LoggedIn User
 
 
 type alias Model =
-    { userStatus : UserStatus
+    { authStatus : AuthenticationStatus
     , user : UserHome.Model
     , loginScreen : LoginScreen.Model
     }
@@ -26,7 +26,7 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { userStatus = LoggedOut
+    { authStatus = LoggedOut
     , user = UserHome.initialModel
     , loginScreen = LoginScreen.initialModel
     }
@@ -40,7 +40,7 @@ update msg model =
                 ( loginScreen, cmd ) =
                     LoginScreen.update subMsg model.loginScreen
 
-                userStatus =
+                authStatus =
                     case loginScreen.user of
                         Nothing ->
                             LoggedOut
@@ -50,7 +50,7 @@ update msg model =
             in
                 ( { model
                     | loginScreen = loginScreen
-                    , userStatus = userStatus
+                    , authStatus = authStatus
                   }
                 , Cmd.map LoginMsg cmd
                 )
@@ -59,7 +59,7 @@ update msg model =
             case subMsg of
                 UserHome.Logout ->
                     ( { model
-                        | userStatus = LoggedOut
+                        | authStatus = LoggedOut
                         , user = UserHome.initialModel
                         , loginScreen = LoginScreen.initialModel
                       }
@@ -67,13 +67,13 @@ update msg model =
                     )
 
                 UserHome.ChangeUsername ->
-                    case model.userStatus of
+                    case model.authStatus of
                         LoggedOut ->
                             ( model, Cmd.none )
 
                         LoggedIn user ->
                             ( { model
-                                | userStatus = LoggedIn { user | email = model.user.email }
+                                | authStatus = LoggedIn { user | email = model.user.email }
                               }
                             , Cmd.none
                             )
@@ -88,7 +88,7 @@ update msg model =
 
 view : Model -> Html.Html Msg
 view model =
-    case model.userStatus of
+    case model.authStatus of
         LoggedIn user ->
             renderUserHome model.user user
 
