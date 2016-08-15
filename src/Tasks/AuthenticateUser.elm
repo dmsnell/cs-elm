@@ -57,7 +57,7 @@ handleResponse { status, statusText, value } =
             Err "Invalid login combination. Please try again."
 
         _ ->
-            Err statusText
+            Err <| "Unrecognized error: " ++ statusText
 
 
 errorText : Http.RawError -> Result String String
