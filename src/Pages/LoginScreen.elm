@@ -15,6 +15,8 @@ type Msg
   | FetchSuccess (Maybe User)
   | FetchError String
 
+type ChildMsg
+  = SubmitLogin
 
 type alias Model
   = { loginForm : Dialog.Model
@@ -40,17 +42,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
     FormMsg formMsg ->
-      if formMsg == Dialog.SubmitLogin
-
-      then
-        ( model, fetchUserToken model.loginForm )
-
-      else
         let
-          ( loginForm, cmd ) = Dialog.update formMsg model.loginForm
+          ( loginForm, action ) = Dialog.update SubmitLogin formMsg model.loginForm
 
-        in
-          ( { model | loginForm = loginForm }, Cmd.map FormMsg cmd )
+        in case action of
+            Just SubmitLogin ->
+                ( { model | loginForm = loginForm }, fetchUserToken model.loginForm )
+
+            Nothing ->
+                ( { model | loginForm = loginForm }, Cmd.none )
 
     FetchSuccess user ->
       ( { model | user = user }, Cmd.none )

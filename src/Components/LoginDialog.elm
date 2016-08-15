@@ -26,11 +26,11 @@ initialModel
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : msg -> Msg -> Model -> ( Model, Maybe msg )
+update onSubmit msg model =
   case msg of
     SubmitLogin ->
-      ( model, Cmd.none )
+      ( model, Just onSubmit )
 
     Update field value ->
       let next =
@@ -41,7 +41,7 @@ update msg model =
           Password ->
             { model | password = value }
       in
-        ( next, Cmd.none )
+        ( next, Nothing )
 
 
 view : Model -> Html.Html Msg
