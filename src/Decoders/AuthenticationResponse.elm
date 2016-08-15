@@ -2,7 +2,6 @@ module Decoders.AuthenticationResponse exposing (..)
 
 import Json.Decode
 import Json.Decode.Pipeline
-
 import Models.AuthenticationResponse exposing (AuthenticationResponse)
 import Models.User exposing (User)
 
@@ -19,4 +18,3 @@ decodeUser =
     Json.Decode.Pipeline.decode User
         |> Json.Decode.Pipeline.required "id" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "email" (Json.Decode.string)
-

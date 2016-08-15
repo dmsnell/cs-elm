@@ -2,99 +2,114 @@ module App exposing (main)
 
 import Html exposing (div, text)
 import Html.App
-
 import Models.User exposing (User)
-
 import Pages.LoginScreen as LoginScreen
 import Pages.UserHome as UserHome
 
 
 type Msg
-  = LoginMsg LoginScreen.Msg
-  | UserMsg UserHome.Msg
+    = LoginMsg LoginScreen.Msg
+    | UserMsg UserHome.Msg
+
 
 type UserStatus
-  = LoggedOut
-  | LoggedIn User
+    = LoggedOut
+    | LoggedIn User
+
 
 type alias Model =
-  { userStatus : UserStatus
-  , user : UserHome.Model
-  , loginScreen : LoginScreen.Model
-  }
+    { userStatus : UserStatus
+    , user : UserHome.Model
+    , loginScreen : LoginScreen.Model
+    }
 
 
 initialModel : Model
 initialModel =
-  { userStatus = LoggedOut
-  , user = UserHome.initialModel
-  , loginScreen = LoginScreen.initialModel
-  }
+    { userStatus = LoggedOut
+    , user = UserHome.initialModel
+    , loginScreen = LoginScreen.initialModel
+    }
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    LoginMsg subMsg ->
-      let
-        ( loginScreen, cmd ) = LoginScreen.update subMsg model.loginScreen
+    case msg of
+        LoginMsg subMsg ->
+            let
+                ( loginScreen, cmd ) =
+                    LoginScreen.update subMsg model.loginScreen
 
-        userStatus = case loginScreen.user of
-            Nothing -> LoggedOut
-            Just user -> LoggedIn user
+                userStatus =
+                    case loginScreen.user of
+                        Nothing ->
+                            LoggedOut
 
-      in
-        ( { model
-            | loginScreen = loginScreen
-            , userStatus = userStatus
-            }, Cmd.map LoginMsg cmd )
+                        Just user ->
+                            LoggedIn user
+            in
+                ( { model
+                    | loginScreen = loginScreen
+                    , userStatus = userStatus
+                  }
+                , Cmd.map LoginMsg cmd
+                )
 
-    UserMsg subMsg ->
-      case subMsg of
-        UserHome.Logout ->
-          ( { model
-              | userStatus = LoggedOut
-              , user = UserHome.initialModel
-              , loginScreen = LoginScreen.initialModel
-              }, Cmd.none )
+        UserMsg subMsg ->
+            case subMsg of
+                UserHome.Logout ->
+                    ( { model
+                        | userStatus = LoggedOut
+                        , user = UserHome.initialModel
+                        , loginScreen = LoginScreen.initialModel
+                      }
+                    , Cmd.none
+                    )
 
-        UserHome.ChangeUsername ->
-          case model.userStatus of
-            LoggedOut -> ( model, Cmd.none )
-            LoggedIn user ->
-              ( { model
-                  | userStatus = LoggedIn { user | email = model.user.email }
-                  }, Cmd.none )
+                UserHome.ChangeUsername ->
+                    case model.userStatus of
+                        LoggedOut ->
+                            ( model, Cmd.none )
 
-        _ ->
-          let
-            ( user, cmd ) = UserHome.update subMsg model.user
+                        LoggedIn user ->
+                            ( { model
+                                | userStatus = LoggedIn { user | email = model.user.email }
+                              }
+                            , Cmd.none
+                            )
 
-          in
-            ( { model | user = user }, Cmd.map UserMsg cmd )
+                _ ->
+                    let
+                        ( user, cmd ) =
+                            UserHome.update subMsg model.user
+                    in
+                        ( { model | user = user }, Cmd.map UserMsg cmd )
 
 
 view : Model -> Html.Html Msg
 view model =
-  case model.userStatus of
-    LoggedIn user -> renderUserHome model.user user
-    LoggedOut -> renderLoginScreen model.loginScreen
+    case model.userStatus of
+        LoggedIn user ->
+            renderUserHome model.user user
+
+        LoggedOut ->
+            renderLoginScreen model.loginScreen
 
 
 renderUserHome : UserHome.Model -> User -> Html.Html Msg
-renderUserHome userModel user  =
-      Html.App.map UserMsg (UserHome.view userModel user)
+renderUserHome userModel user =
+    Html.App.map UserMsg (UserHome.view userModel user)
 
 
 renderLoginScreen : LoginScreen.Model -> Html.Html Msg
 renderLoginScreen model =
-  Html.App.map LoginMsg (LoginScreen.view model)
+    Html.App.map LoginMsg (LoginScreen.view model)
 
 
 main =
-  Html.App.program
-    { init = ( initialModel, Cmd.none )
-    , view = view
-    , update = update
-    , subscriptions = \_ -> Sub.none
-    }
+    Html.App.program
+        { init = ( initialModel, Cmd.none )
+        , view = view
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        }
