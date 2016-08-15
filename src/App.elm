@@ -6,13 +6,14 @@ import Models.User exposing (User)
 import Pages.LoginScreen as LoginScreen
 import Pages.UserHome as UserHome
 import Task exposing (Task)
+import Tasks.AuthenticateUser exposing (AuthenticationTask)
 
 
 type Msg
     = LoginMsg LoginScreen.Msg
     | UserMsg UserHome.Msg
     | LoginFailure String
-    | LoginSuccess (Maybe User)
+    | LoginSuccess (Result String User)
 
 
 type AuthenticationStatus
@@ -35,24 +36,29 @@ initialModel =
     }
 
 
-fetchUserToken : Task String (Maybe User) -> Cmd Msg
+fetchUserToken : AuthenticationTask -> Cmd Msg
 fetchUserToken task =
     Task.perform LoginFailure LoginSuccess task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ loginScreen } as model) =
     case msg of
         LoginFailure error ->
-            ( model, Cmd.none )
+            ( { model | loginScreen = { loginScreen | error = Just error } }, Cmd.none )
 
         LoginSuccess login ->
             case login of
-                Just user ->
-                    ( { model | authStatus = LoggedIn user }, Cmd.none )
+                Ok user ->
+                    ( { model
+                        | authStatus = LoggedIn user
+                        , loginScreen = { loginScreen | error = Nothing }
+                      }
+                    , Cmd.none
+                    )
 
-                Nothing ->
-                    ( model, Cmd.none )
+                Err error ->
+                    ( { model | loginScreen = { loginScreen | error = Just error } }, Cmd.none )
 
         LoginMsg subMsg ->
             let

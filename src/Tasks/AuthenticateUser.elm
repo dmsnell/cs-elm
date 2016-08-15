@@ -7,13 +7,17 @@ import Decoders.AuthenticationResponse exposing (decodeAuthenticationResponse)
 import Models.User exposing (User)
 
 
+type alias AuthenticationTask =
+    Task String (Result String User)
+
+
 type alias LoginCredentials =
     { email : String
     , password : String
     }
 
 
-requestLoginToken : LoginCredentials -> Task String (Maybe User)
+requestLoginToken : LoginCredentials -> Task String (Result String User)
 requestLoginToken { email, password } =
     { verb = "GET"
     , headers = [ ( "Authorization", "Basic:" ++ email ++ ":" ++ password ) ]
@@ -25,7 +29,7 @@ requestLoginToken { email, password } =
         |> Task.mapError errorText
 
 
-decodeResponse : String -> Maybe User
+decodeResponse : String -> Result String User
 decodeResponse json =
     let
         decoded =
@@ -33,10 +37,10 @@ decodeResponse json =
     in
         case decoded of
             Ok _ ->
-                Just (User 42 "test@example.com")
+                Ok <| User 42 "test@example.com"
 
-            _ ->
-                Nothing
+            Err error ->
+                Err <| error
 
 
 responseText : Http.Response -> String

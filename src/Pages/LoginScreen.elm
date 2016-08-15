@@ -2,10 +2,8 @@ module Pages.LoginScreen exposing (..)
 
 import Html exposing (div, text)
 import Html.App
-import Task exposing (Task)
-import Tasks.AuthenticateUser exposing (requestLoginToken)
+import Tasks.AuthenticateUser exposing (AuthenticationTask, requestLoginToken)
 import Components.LoginDialog as Dialog
-import Models.User exposing (User)
 
 
 type Msg
@@ -29,7 +27,7 @@ initialModel =
     }
 
 
-update : Msg -> Model -> ( Model, Maybe (Task String (Maybe User)) )
+update : Msg -> Model -> ( Model, Maybe AuthenticationTask )
 update msg model =
     case msg of
         FormMsg formMsg ->
