@@ -4,11 +4,10 @@ import Http
 import Json.Decode
 import Task exposing (Task)
 import Decoders.AuthenticationResponse exposing (decodeAuthenticationResponse)
-import Models.User exposing (User)
 
 
 type alias AuthenticationTask =
-    Task String (Result String User)
+    Task String (Result String String)
 
 
 type alias LoginCredentials =
@@ -17,40 +16,48 @@ type alias LoginCredentials =
     }
 
 
-requestLoginToken : LoginCredentials -> Task String (Result String User)
+requestLoginToken : LoginCredentials -> Task String (Result String String)
 requestLoginToken { email, password } =
     { verb = "GET"
     , headers = [ ( "Authorization", "Basic:" ++ email ++ ":" ++ password ) ]
-    , url = "http://localhost:5000/api/requestapikey"
+    , url = "https://app.communityshare.us/api/requestapikey"
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings
-        |> Task.map (responseText >> decodeResponse)
+        |> Task.map handleResponse
         |> Task.mapError errorText
 
 
-decodeResponse : String -> Result String User
+decodeResponse : String -> Result String String
 decodeResponse json =
     let
         decoded =
             Json.Decode.decodeString decodeAuthenticationResponse json
     in
         case decoded of
-            Ok _ ->
-                Ok <| User 42 "test@example.com"
+            Ok data ->
+                Ok <| data.apiKey
 
             Err error ->
                 Err <| error
 
 
-responseText : Http.Response -> String
-responseText response =
-    case response.value of
-        Http.Text t ->
-            t
+handleResponse : Http.Response -> Result String String
+handleResponse { status, statusText, value } =
+    case status of
+        200 ->
+            case value of
+                Http.Text t ->
+                    decodeResponse t
+
+                _ ->
+                    Err statusText
+
+        401 ->
+            Err "Invalid login combination. Please try again."
 
         _ ->
-            ""
+            Err statusText
 
 
 errorText : Http.RawError -> String

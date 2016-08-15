@@ -13,12 +13,12 @@ type Msg
     = LoginMsg LoginScreen.Msg
     | UserMsg UserHome.Msg
     | LoginFailure String
-    | LoginSuccess (Result String User)
+    | LoginSuccess (Result String String)
 
 
 type AuthenticationStatus
     = LoggedOut
-    | LoggedIn User
+    | LoggedIn String
 
 
 type alias Model =
@@ -49,9 +49,9 @@ update msg ({ loginScreen } as model) =
 
         LoginSuccess login ->
             case login of
-                Ok user ->
+                Ok apiKey ->
                     ( { model
-                        | authStatus = LoggedIn user
+                        | authStatus = LoggedIn apiKey
                         , loginScreen = { loginScreen | error = Nothing }
                       }
                     , Cmd.none
@@ -83,18 +83,6 @@ update msg ({ loginScreen } as model) =
                     , Cmd.none
                     )
 
-                UserHome.ChangeUsername ->
-                    case model.authStatus of
-                        LoggedOut ->
-                            ( model, Cmd.none )
-
-                        LoggedIn user ->
-                            ( { model
-                                | authStatus = LoggedIn { user | email = model.user.email }
-                              }
-                            , Cmd.none
-                            )
-
                 _ ->
                     let
                         ( user, cmd ) =
@@ -106,8 +94,8 @@ update msg ({ loginScreen } as model) =
 view : Model -> Html.Html Msg
 view model =
     case model.authStatus of
-        LoggedIn user ->
-            renderUserHome model.user user
+        LoggedIn _ ->
+            renderUserHome model.user <| User 42 "test@example.com"
 
         LoggedOut ->
             renderLoginScreen model.loginScreen
