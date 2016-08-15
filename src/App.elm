@@ -5,11 +5,14 @@ import Html.App
 import Models.User exposing (User)
 import Pages.LoginScreen as LoginScreen
 import Pages.UserHome as UserHome
+import Task exposing (Task)
 
 
 type Msg
     = LoginMsg LoginScreen.Msg
     | UserMsg UserHome.Msg
+    | LoginFailure String
+    | LoginSuccess (Maybe User)
 
 
 type AuthenticationStatus
@@ -32,28 +35,36 @@ initialModel =
     }
 
 
+fetchUserToken : Task String (Maybe User) -> Cmd Msg
+fetchUserToken task =
+    Task.perform LoginFailure LoginSuccess task
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        LoginFailure error ->
+            ( model, Cmd.none )
+
+        LoginSuccess login ->
+            case login of
+                Just user ->
+                    ( { model | authStatus = LoggedIn user }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         LoginMsg subMsg ->
             let
                 ( loginScreen, cmd ) =
                     LoginScreen.update subMsg model.loginScreen
-
-                authStatus =
-                    case loginScreen.user of
-                        Nothing ->
-                            LoggedOut
-
-                        Just user ->
-                            LoggedIn user
             in
-                ( { model
-                    | loginScreen = loginScreen
-                    , authStatus = authStatus
-                  }
-                , Cmd.map LoginMsg cmd
-                )
+                case cmd of
+                    Just task ->
+                        ( model, fetchUserToken task )
+
+                    Nothing ->
+                        ( { model | loginScreen = loginScreen }, Cmd.none )
 
         UserMsg subMsg ->
             case subMsg of
@@ -106,6 +117,7 @@ renderLoginScreen model =
     Html.App.map LoginMsg (LoginScreen.view model)
 
 
+main : Program Never
 main =
     Html.App.program
         { init = ( initialModel, Cmd.none )

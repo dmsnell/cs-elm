@@ -10,8 +10,6 @@ import Models.User exposing (User)
 
 type Msg
     = FormMsg Dialog.Msg
-    | FetchSuccess (Maybe User)
-    | FetchError String
 
 
 type ChildMsg
@@ -21,7 +19,6 @@ type ChildMsg
 type alias Model =
     { loginForm : Dialog.Model
     , error : Maybe String
-    , user : Maybe User
     }
 
 
@@ -29,16 +26,10 @@ initialModel : Model
 initialModel =
     { loginForm = Dialog.initialModel
     , error = Nothing
-    , user = Nothing
     }
 
 
-fetchUserToken : Dialog.Model -> Cmd Msg
-fetchUserToken model =
-    Task.perform FetchError FetchSuccess (requestLoginToken model)
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Maybe (Task String (Maybe User)) )
 update msg model =
     case msg of
         FormMsg formMsg ->
@@ -48,16 +39,10 @@ update msg model =
             in
                 case action of
                     Just SubmitLogin ->
-                        ( model, fetchUserToken model.loginForm )
+                        ( model, Just (requestLoginToken model.loginForm) )
 
                     _ ->
-                        ( { model | loginForm = loginForm }, Cmd.none )
-
-        FetchSuccess user ->
-            ( { model | user = user }, Cmd.none )
-
-        FetchError error ->
-            ( { model | error = Just error }, Cmd.none )
+                        ( { model | loginForm = loginForm }, Nothing )
 
 
 view : Model -> Html.Html Msg
