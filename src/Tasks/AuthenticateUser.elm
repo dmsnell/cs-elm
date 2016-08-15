@@ -51,7 +51,7 @@ handleResponse { status, statusText, value } =
                     decodeResponse t
 
                 _ ->
-                    Err statusText
+                    Err "Unrecognized response from server."
 
         401 ->
             Err "Invalid login combination. Please try again."
