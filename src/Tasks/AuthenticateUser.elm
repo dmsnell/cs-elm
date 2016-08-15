@@ -7,12 +7,18 @@ import Decoders.AuthenticationResponse exposing (decodeAuthenticationResponse)
 
 
 type alias AuthenticationTask =
-    Task (Result String String) (Result String String)
+    Task (Result String LoginInfo) (Result String LoginInfo)
 
 
 type alias LoginCredentials =
     { email : String
     , password : String
+    }
+
+
+type alias LoginInfo =
+    { email : String
+    , apiKey : String
     }
 
 
@@ -24,31 +30,31 @@ requestLoginToken { email, password } =
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings
-        |> Task.map handleResponse
+        |> Task.map (handleResponse email)
         |> Task.mapError errorText
 
 
-decodeResponse : String -> Result String String
-decodeResponse json =
+decodeResponse : String -> String -> Result String LoginInfo
+decodeResponse email json =
     let
         decoded =
             Json.Decode.decodeString decodeAuthenticationResponse json
     in
         case decoded of
             Ok data ->
-                Ok <| data.apiKey
+                Ok <| LoginInfo email data.apiKey
 
             Err error ->
                 Err <| error
 
 
-handleResponse : Http.Response -> Result String String
-handleResponse { status, statusText, value } =
+handleResponse : String -> Http.Response -> Result String LoginInfo
+handleResponse email { status, statusText, value } =
     case status of
         200 ->
             case value of
                 Http.Text t ->
-                    decodeResponse t
+                    decodeResponse email t
 
                 _ ->
                     Err "Unrecognized response from server."
@@ -60,7 +66,7 @@ handleResponse { status, statusText, value } =
             Err <| "Unrecognized error: " ++ statusText
 
 
-errorText : Http.RawError -> Result String String
+errorText : Http.RawError -> Result String LoginInfo
 errorText error =
     case error of
         Http.RawTimeout ->

@@ -6,18 +6,18 @@ import Models.User exposing (User)
 import Pages.LoginScreen as LoginScreen
 import Pages.UserHome as UserHome
 import Task exposing (Task)
-import Tasks.AuthenticateUser exposing (AuthenticationTask)
+import Tasks.AuthenticateUser exposing (AuthenticationTask, LoginInfo)
 
 
 type Msg
     = LoginMsg LoginScreen.Msg
     | UserMsg UserHome.Msg
-    | LoginResponse (Result String String)
+    | LoginResponse (Result String LoginInfo)
 
 
 type AuthenticationStatus
     = LoggedOut
-    | LoggedIn String
+    | LoggedIn LoginInfo
 
 
 type alias Model =
@@ -45,9 +45,9 @@ update msg ({ loginScreen } as model) =
     case msg of
         LoginResponse login ->
             case login of
-                Ok apiKey ->
+                Ok info ->
                     ( { model
-                        | authStatus = LoggedIn apiKey
+                        | authStatus = LoggedIn info
                         , loginScreen = { loginScreen | error = Nothing }
                       }
                     , Cmd.none
@@ -90,8 +90,8 @@ update msg ({ loginScreen } as model) =
 view : Model -> Html.Html Msg
 view model =
     case model.authStatus of
-        LoggedIn _ ->
-            renderUserHome model.user <| User 42 "test@example.com"
+        LoggedIn user ->
+            renderUserHome model.user <| User 42 user.email
 
         LoggedOut ->
             renderLoginScreen model.loginScreen
