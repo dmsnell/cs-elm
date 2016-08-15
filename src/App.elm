@@ -39,9 +39,9 @@ update msg model =
       let
         ( loginScreen, cmd ) = LoginScreen.update subMsg model.loginScreen
 
-        userStatus = case loginScreen.apiKey of
+        userStatus = case loginScreen.user of
             Nothing -> LoggedOut
-            Just apiKey -> LoggedIn (User 42 "Bob")
+            Just user -> LoggedIn user
 
       in
         ( { model

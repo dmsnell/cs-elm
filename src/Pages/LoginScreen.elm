@@ -2,50 +2,38 @@ module Pages.LoginScreen exposing (..)
 
 import Html exposing (div, text)
 import Html.App
-import Http
 import Task exposing (Task)
-import Json.Decode
+
+import Tasks.AuthenticateUser exposing (requestLoginToken)
 
 import Components.LoginDialog as Dialog
-import Decoders.AuthenticationResponse exposing (decodeAuthenitcationResponse)
-import Models.AuthenticationResponse exposing (AuthenticationResponse, emptyResponse)
+import Models.User exposing (User)
 
 
 type Msg
   = FormMsg Dialog.Msg
-  | FetchSuccess Http.Response
-  | FetchError Http.RawError
+  | FetchSuccess (Maybe User)
+  | FetchError String
 
 
 type alias Model
   = { loginForm : Dialog.Model
-    , apiKey : Maybe String
     , error : Maybe String
+    , user : Maybe User
     }
 
 
 initialModel : Model
 initialModel
   = { loginForm = Dialog.initialModel
-    , apiKey = Nothing
     , error = Nothing
-    }
-
-
-requestToken : Dialog.Model -> Task Http.RawError Http.Response
-requestToken { email, password } =
-  Http.send Http.defaultSettings
-    { verb = "GET"
-    , headers = [ ("Authorization", "Basic:" ++ email ++ ":" ++ password)
-                ]
-    , url = "http://localhost:5000/api/requestapikey"
-    , body = Http.empty
+    , user = Nothing
     }
 
 
 fetchUserToken : Dialog.Model -> Cmd Msg
 fetchUserToken model =
-  Task.perform FetchError FetchSuccess (requestToken model)
+  Task.perform FetchError FetchSuccess (requestLoginToken model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,35 +52,11 @@ update msg model =
         in
           ( { model | loginForm = loginForm }, Cmd.map FormMsg cmd )
 
-    FetchSuccess response ->
-      let json = case response.value of
-            Http.Text s -> s
-            _ -> "{apiKey: '', user: {}}"
-
-          authResponse =
-            Json.Decode.decodeString decodeAuthenitcationResponse json
-
-          (apiKey, error) =
-            case authResponse of
-              Ok response ->
-                (Just response.apiKey, Nothing)
-
-              Err e ->
-                (Nothing, Just e)
-
-      in
-          ( { model
-                | apiKey = apiKey
-                , error = error
-                }, Cmd.none )
+    FetchSuccess user ->
+      ( { model | user = user }, Cmd.none )
 
     FetchError error ->
-        case error of
-            Http.RawTimeout ->
-                ( { model | error = Just "Timeout contacting server" }, Cmd.none )
-
-            Http.RawNetworkError ->
-                ( { model | error = Just "Network error" }, Cmd.none )
+      ( { model | error = Just error }, Cmd.none )
 
 
 view : Model -> Html.Html Msg

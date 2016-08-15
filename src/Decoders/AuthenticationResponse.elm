@@ -1,6 +1,5 @@
 module Decoders.AuthenticationResponse exposing (..)
 
-import Json.Encode
 import Json.Decode
 import Json.Decode.Pipeline
 
@@ -8,8 +7,8 @@ import Models.AuthenticationResponse exposing (AuthenticationResponse)
 import Models.User exposing (User)
 
 
-decodeAuthenitcationResponse : Json.Decode.Decoder AuthenticationResponse
-decodeAuthenitcationResponse =
+decodeAuthenticationResponse : Json.Decode.Decoder AuthenticationResponse
+decodeAuthenticationResponse =
     Json.Decode.Pipeline.decode AuthenticationResponse
         |> Json.Decode.Pipeline.required "apiKey" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "user" (decodeUser)
