@@ -46,17 +46,17 @@ update msg model =
 view : Model -> Html.Html Msg
 view model =
     let
-        error =
+        errorMessage =
             case model.error of
                 Nothing ->
-                    ""
+                    Html.text ""
 
                 Just e ->
-                    e
+                    div [] [ text e ]
     in
         div []
             [ renderForm model
-            , div [] [ text error ]
+            , errorMessage
             ]
 
 
