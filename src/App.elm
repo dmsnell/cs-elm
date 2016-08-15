@@ -12,8 +12,7 @@ import Tasks.AuthenticateUser exposing (AuthenticationTask)
 type Msg
     = LoginMsg LoginScreen.Msg
     | UserMsg UserHome.Msg
-    | LoginFailure String
-    | LoginSuccess (Result String String)
+    | LoginResponse (Result String String)
 
 
 type AuthenticationStatus
@@ -38,16 +37,13 @@ initialModel =
 
 fetchUserToken : AuthenticationTask -> Cmd Msg
 fetchUserToken task =
-    Task.perform LoginFailure LoginSuccess task
+    Task.perform LoginResponse LoginResponse task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ loginScreen } as model) =
     case msg of
-        LoginFailure error ->
-            ( { model | loginScreen = { loginScreen | error = Just error } }, Cmd.none )
-
-        LoginSuccess login ->
+        LoginResponse login ->
             case login of
                 Ok apiKey ->
                     ( { model

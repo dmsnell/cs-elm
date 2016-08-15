@@ -7,7 +7,7 @@ import Decoders.AuthenticationResponse exposing (decodeAuthenticationResponse)
 
 
 type alias AuthenticationTask =
-    Task String (Result String String)
+    Task (Result String String) (Result String String)
 
 
 type alias LoginCredentials =
@@ -16,7 +16,7 @@ type alias LoginCredentials =
     }
 
 
-requestLoginToken : LoginCredentials -> Task String (Result String String)
+requestLoginToken : LoginCredentials -> AuthenticationTask
 requestLoginToken { email, password } =
     { verb = "GET"
     , headers = [ ( "Authorization", "Basic:" ++ email ++ ":" ++ password ) ]
@@ -60,11 +60,11 @@ handleResponse { status, statusText, value } =
             Err statusText
 
 
-errorText : Http.RawError -> String
+errorText : Http.RawError -> Result String String
 errorText error =
     case error of
         Http.RawTimeout ->
-            "Timeout contacting server"
+            Err "Timeout contacting server"
 
         Http.RawNetworkError ->
-            "Network error"
+            Err "Network error"
