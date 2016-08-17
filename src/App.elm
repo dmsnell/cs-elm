@@ -5,14 +5,12 @@ import Html.App
 import Models.User exposing (User)
 import Pages.LoginScreen as LoginScreen
 import Pages.UserHome as UserHome
-import Task exposing (Task)
-import Tasks.AuthenticateUser exposing (AuthenticationTask, LoginInfo)
+import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type Msg
     = LoginMsg LoginScreen.Msg
     | UserMsg UserHome.Msg
-    | LoginResponse (Result String LoginInfo)
 
 
 type AuthenticationStatus
@@ -35,38 +33,29 @@ initialModel =
     }
 
 
-fetchUserToken : AuthenticationTask -> Cmd Msg
-fetchUserToken task =
-    Task.perform LoginResponse LoginResponse task
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ loginScreen } as model) =
     case msg of
-        LoginResponse login ->
-            case login of
-                Ok info ->
-                    ( { model
-                        | authStatus = LoggedIn info
-                        , loginScreen = { loginScreen | error = Nothing }
-                      }
-                    , Cmd.none
-                    )
-
-                Err error ->
-                    ( { model | loginScreen = { loginScreen | error = Just error } }, Cmd.none )
-
         LoginMsg subMsg ->
             let
-                ( loginScreen, cmd ) =
+                ( loginScreen, cmd, info ) =
                     LoginScreen.update subMsg model.loginScreen
             in
-                case cmd of
-                    Just task ->
-                        ( model, fetchUserToken task )
+                let
+                    authStatus =
+                        case info of
+                            Just loginInfo ->
+                                LoggedIn loginInfo
 
-                    Nothing ->
-                        ( { model | loginScreen = loginScreen }, Cmd.none )
+                            Nothing ->
+                                LoggedOut
+                in
+                    ( { model
+                        | loginScreen = loginScreen
+                        , authStatus = authStatus
+                      }
+                    , Cmd.map LoginMsg cmd
+                    )
 
         UserMsg subMsg ->
             case subMsg of
