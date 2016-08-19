@@ -20,7 +20,6 @@ type AuthenticationStatus
 
 type alias Model =
     { authStatus : AuthenticationStatus
-    , user : UserHome.Model
     , loginScreen : LoginScreen.Model
     }
 
@@ -28,7 +27,6 @@ type alias Model =
 initialModel : Model
 initialModel =
     { authStatus = LoggedOut
-    , user = UserHome.initialModel
     , loginScreen = LoginScreen.initialModel
     }
 
@@ -62,38 +60,20 @@ update msg ({ loginScreen } as model) =
                 UserHome.Logout ->
                     ( { model
                         | authStatus = LoggedOut
-                        , user = UserHome.initialModel
                         , loginScreen = LoginScreen.initialModel
                       }
                     , Cmd.none
                     )
 
-                _ ->
-                    let
-                        ( user, cmd ) =
-                            UserHome.update subMsg model.user
-                    in
-                        ( { model | user = user }, Cmd.map UserMsg cmd )
-
 
 view : Model -> Html.Html Msg
 view model =
     case model.authStatus of
-        LoggedIn user ->
-            renderUserHome model.user <| User 42 user.email
+        LoggedIn info ->
+            Html.App.map UserMsg (UserHome.view info)
 
         LoggedOut ->
-            renderLoginScreen model.loginScreen
-
-
-renderUserHome : UserHome.Model -> User -> Html.Html Msg
-renderUserHome userModel user =
-    Html.App.map UserMsg (UserHome.view userModel user)
-
-
-renderLoginScreen : LoginScreen.Model -> Html.Html Msg
-renderLoginScreen model =
-    Html.App.map LoginMsg (LoginScreen.view model)
+            Html.App.map LoginMsg (LoginScreen.view model.loginScreen)
 
 
 main : Program Never

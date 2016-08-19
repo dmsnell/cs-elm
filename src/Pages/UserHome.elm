@@ -4,46 +4,32 @@ import Html exposing (button, div, input, label, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Models.User exposing (User, emptyUser)
+import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type Msg
     = Logout
-    | ChangeUsername
-    | UpdateUsernameField String
 
 
 type alias Model =
-    { email : String
-    }
+    {}
 
 
 initialModel : Model
 initialModel =
-    { email = ""
-    }
+    {}
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         Logout ->
-            ( model, Cmd.none )
-
-        ChangeUsername ->
-            ( model, Cmd.none )
-
-        UpdateUsernameField value ->
-            ( { model | email = value }, Cmd.none )
+            (Cmd.none)
 
 
-view : Model -> User -> Html.Html Msg
-view model user =
+view : LoginInfo -> Html.Html Msg
+view info =
     div []
-        [ div [] [ text ("Hi " ++ user.email) ]
-        , div []
-            [ label [ for "username" ] [ text "Username:" ]
-            , input [ name "username", value model.email, onInput UpdateUsernameField ] []
-            ]
-        , div [] [ button [ onClick ChangeUsername ] [ text "Renew" ] ]
+        [ div [] [ text ("Hi " ++ info.email) ]
         , div [] [ button [ onClick Logout ] [ text "Logout" ] ]
         ]
