@@ -1,10 +1,14 @@
 module Decoders.Conversation exposing (..)
 
 import Json.Decode
-import Json.Decode.Pipeline
+import Json.Decode.Pipeline exposing (decode, required)
 
 
 type alias Conversation =
+    List Message
+
+
+type alias Message =
     { id : Int
     , title : String
     }
@@ -12,6 +16,12 @@ type alias Conversation =
 
 decodeConversation : Json.Decode.Decoder Conversation
 decodeConversation =
-    Json.Decode.Pipeline.decode Conversation
-        |> Json.Decode.Pipeline.required "id" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "title" (Json.Decode.string)
+    Json.Decode.at [ "data" ] <|
+        Json.Decode.list decodeMessage
+
+
+decodeMessage : Json.Decode.Decoder Message
+decodeMessage =
+    decode Message
+        |> required "id" (Json.Decode.int)
+        |> required "title" (Json.Decode.string)

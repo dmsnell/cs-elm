@@ -68,8 +68,16 @@ update msg ({ loginScreen } as model) =
 
                 _ ->
                     let
+                        loginInfo =
+                            case model.authStatus of
+                                LoggedIn info ->
+                                    info
+
+                                LoggedOut ->
+                                    { apiKey = "", email = "" }
+
                         ( userHome, cmd ) =
-                            UserHome.update subMsg model.userHome
+                            UserHome.update subMsg model.userHome loginInfo
                     in
                         ( { model | userHome = userHome }, Cmd.map UserMsg cmd )
 

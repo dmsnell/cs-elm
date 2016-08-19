@@ -15,7 +15,7 @@ fetchConversations : LoginInfo -> ConversationTask
 fetchConversations loginInfo =
     { verb = "GET"
     , headers = [ ( "Authorization", "Basic:api:" ++ loginInfo.apiKey ) ]
-    , url = "https://app.communityshare.us/api/conversation"
+    , url = Http.url "https://app.communityshare.us/api/conversation" [ ( "user_id", "976" ) ]
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings
