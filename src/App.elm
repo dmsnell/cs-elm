@@ -2,7 +2,6 @@ module App exposing (main)
 
 import Html exposing (div, text)
 import Html.App
-import Models.User exposing (User)
 import Pages.LoginScreen as LoginScreen
 import Pages.UserHome as UserHome
 import Tasks.AuthenticateUser exposing (LoginInfo)
@@ -21,6 +20,7 @@ type AuthenticationStatus
 type alias Model =
     { authStatus : AuthenticationStatus
     , loginScreen : LoginScreen.Model
+    , userHome : UserHome.Model
     }
 
 
@@ -28,6 +28,7 @@ initialModel : Model
 initialModel =
     { authStatus = LoggedOut
     , loginScreen = LoginScreen.initialModel
+    , userHome = UserHome.initialModel
     }
 
 
@@ -65,12 +66,19 @@ update msg ({ loginScreen } as model) =
                     , Cmd.none
                     )
 
+                _ ->
+                    let
+                        ( userHome, cmd ) =
+                            UserHome.update subMsg model.userHome
+                    in
+                        ( { model | userHome = userHome }, Cmd.map UserMsg cmd )
+
 
 view : Model -> Html.Html Msg
 view model =
     case model.authStatus of
         LoggedIn info ->
-            Html.App.map UserMsg (UserHome.view info)
+            Html.App.map UserMsg (UserHome.view model.userHome info)
 
         LoggedOut ->
             Html.App.map LoginMsg (LoginScreen.view model.loginScreen)
