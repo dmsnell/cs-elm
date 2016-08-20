@@ -3,12 +3,12 @@ module Tasks.FetchConversations exposing (..)
 import Http
 import Json.Decode
 import Task exposing (Task)
-import Decoders.Conversation exposing (Conversation, decodeConversation)
+import Decoders.Conversation exposing (Conversation, decodeConversations)
 import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type alias ConversationTask =
-    Task (Result String Conversation) (Result String Conversation)
+    Task (Result String (List Conversation)) (Result String (List Conversation))
 
 
 fetchConversations : LoginInfo -> ConversationTask
@@ -23,11 +23,11 @@ fetchConversations loginInfo =
         |> Task.mapError errorText
 
 
-decodeResponse : String -> Result String Conversation
+decodeResponse : String -> Result String (List Conversation)
 decodeResponse json =
     let
         decoded =
-            Json.Decode.decodeString decodeConversation json
+            Json.Decode.decodeString decodeConversations json
     in
         case decoded of
             Ok data ->
@@ -37,7 +37,7 @@ decodeResponse json =
                 Err <| error
 
 
-handleResponse : Http.Response -> Result String Conversation
+handleResponse : Http.Response -> Result String (List Conversation)
 handleResponse { status, statusText, value } =
     case status of
         200 ->
@@ -55,7 +55,7 @@ handleResponse { status, statusText, value } =
             Err <| "Unrecognized error: " ++ statusText
 
 
-errorText : Http.RawError -> Result String Conversation
+errorText : Http.RawError -> Result String (List Conversation)
 errorText error =
     case error of
         Http.RawTimeout ->

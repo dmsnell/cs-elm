@@ -1,7 +1,7 @@
 module Pages.UserHome exposing (..)
 
 import Cmd.Extra exposing (message)
-import Html exposing (button, div, input, label, text)
+import Html exposing (button, div, h1, input, label, p, text)
 import Html.App
 import Html.Events exposing (onClick)
 import Components.Header as Header
@@ -17,7 +17,7 @@ type Msg
     | HeaderMsg Header.Msg
     | SideBarMsg SideBar.Msg
     | FetchMessages
-    | FetchResponse (Result String Conversation)
+    | FetchResponse (Result String (List Conversation))
 
 
 type alias Model =
@@ -48,11 +48,7 @@ update msg model loginInfo =
         FetchResponse response ->
             case response of
                 Ok conversations ->
-                    let
-                        c =
-                            Debug.log "Conversations" conversations
-                    in
-                        ( { model | conversations = [ conversations ] }, Cmd.none )
+                    ( { model | conversations = conversations }, Cmd.none )
 
                 Err error ->
                     let
@@ -72,9 +68,22 @@ update msg model loginInfo =
 
 conversationView : Conversation -> Html.Html Msg
 conversationView conversation =
-    div [] <|
-        List.map (\m -> text m.title) <|
-            Debug.log "conversationView" conversation
+    div []
+        [ h1 [] [ text conversation.title ]
+        , p [] [ text <| toString conversation.dateCreated ]
+        , p [] [ text <| "From: " ++ conversation.userA.name ]
+        , p [] [ text <| "To: " ++ conversation.userB.name ]
+        , div []
+            (List.map
+                (\m ->
+                    div []
+                        [ p [] [ text <| toString m.dateCreated ]
+                        , p [] [ text m.content ]
+                        ]
+                )
+                conversation.messages
+            )
+        ]
 
 
 view : Model -> LoginInfo -> Html.Html Msg
