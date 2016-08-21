@@ -18,6 +18,17 @@ type alias Conversation =
     }
 
 
+emptyConversation : Conversation
+emptyConversation =
+    { id = 0
+    , title = ""
+    , dateCreated = fromParts 2000 Date.Jan 1 0 0 0 0
+    , messages = []
+    , userA = User.emptyUser
+    , userB = User.emptyUser
+    }
+
+
 type alias Message =
     { content : String
     , id : Int

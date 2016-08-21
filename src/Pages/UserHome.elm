@@ -10,12 +10,14 @@ import Task as Task
 import Tasks.AuthenticateUser exposing (LoginInfo)
 import Tasks.FetchConversations exposing (fetchConversations)
 import Decoders.Conversation exposing (Conversation)
+import Pages.ConversationList as Messages
 
 
 type Msg
     = Logout
     | HeaderMsg Header.Msg
     | SideBarMsg SideBar.Msg
+    | ConversationMsg Messages.Msg
     | FetchMessages
     | FetchResponse (Result String (List Conversation))
 
@@ -23,6 +25,7 @@ type Msg
 type alias Model =
     { activeSection : SideBar.Section
     , conversations : List Conversation
+    , messagePane : Messages.Model
     }
 
 
@@ -30,6 +33,7 @@ initialModel : Model
 initialModel =
     { activeSection = SideBar.Messages
     , conversations = []
+    , messagePane = Messages.initialModel
     }
 
 
@@ -65,25 +69,12 @@ update msg model loginInfo =
                 _ ->
                     ( model, Cmd.none )
 
-
-conversationView : Conversation -> Html.Html Msg
-conversationView conversation =
-    div []
-        [ h1 [] [ text conversation.title ]
-        , p [] [ text <| toString conversation.dateCreated ]
-        , p [] [ text <| "From: " ++ conversation.userA.name ]
-        , p [] [ text <| "To: " ++ conversation.userB.name ]
-        , div []
-            (List.map
-                (\m ->
-                    div []
-                        [ p [] [ text <| toString m.dateCreated ]
-                        , p [] [ text m.content ]
-                        ]
-                )
-                conversation.messages
-            )
-        ]
+        ConversationMsg subMsg ->
+            let
+                ( messagePane, cmd ) =
+                    Messages.update subMsg model.messagePane
+            in
+                ( { model | messagePane = messagePane }, Cmd.none )
 
 
 view : Model -> LoginInfo -> Html.Html Msg
@@ -91,9 +82,9 @@ view model info =
     div []
         [ Html.App.map HeaderMsg Header.view
         , Html.App.map SideBarMsg SideBar.view
-        , div []
-            [ text <| toString model.activeSection ]
         , button [ onClick FetchMessages ] [ text "Fetch Messages" ]
         , div []
-            (List.map conversationView model.conversations)
+            [ h1 [] [ text <| toString model.activeSection ]
+            , Html.App.map ConversationMsg <| Messages.view model.messagePane model.conversations
+            ]
         ]
