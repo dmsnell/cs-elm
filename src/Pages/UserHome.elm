@@ -4,7 +4,6 @@ import Cmd.Extra exposing (message)
 import Dict exposing (Dict)
 import Html exposing (button, div, h1, input, label, p, text)
 import Html.App
-import Html.Events exposing (onClick)
 import Components.Header as Header
 import Components.SideBar as SideBar
 import Task as Task
