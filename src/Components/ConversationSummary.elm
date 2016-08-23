@@ -8,8 +8,7 @@ import Models.User exposing (User)
 
 
 type Msg
-    = NoOp
-    | SelectConversation Int
+    = SelectConversation Int
 
 
 avatar : User -> Html.Html Msg
