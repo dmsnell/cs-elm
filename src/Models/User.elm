@@ -15,7 +15,7 @@ type MemberRole
 type alias User =
     { id : Int
     , name : String
-    , avatarUrl : Maybe String
+    , avatarUrl : String
     , isActive : Bool
     , biography : String
     , zipcode : Maybe Int
@@ -29,7 +29,7 @@ emptyUser : User
 emptyUser =
     { id = 0
     , name = ""
-    , avatarUrl = Nothing
+    , avatarUrl = defaultAvatarUrl
     , isActive = False
     , biography = ""
     , zipcode = Nothing
@@ -37,3 +37,8 @@ emptyUser =
     , siteRole = Guest
     , memberRole = Lurker
     }
+
+
+defaultAvatarUrl : String
+defaultAvatarUrl =
+    "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm"
