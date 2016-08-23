@@ -1,11 +1,13 @@
 module Pages.ConversationList exposing (..)
 
+import Dict as Dict
 import Html exposing (button, div, ul, li, text)
 import Html.Events exposing (onClick)
 import Html.App
 import Components.ConversationDetail as Detail
 import Components.ConversationSummary as Summary
 import Decoders.Conversation exposing (Conversation, emptyConversation)
+import Models.User exposing (User)
 
 
 type Msg
@@ -31,9 +33,6 @@ update msg model =
             case subMsg of
                 Summary.SelectConversation id ->
                     ( { model | selectedConversation = Just id }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
 
         UnselectMessage ->
             ( { model | selectedConversation = Nothing }, Cmd.none )

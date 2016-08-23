@@ -1,12 +1,14 @@
 module Pages.UserHome exposing (..)
 
 import Cmd.Extra exposing (message)
+import Dict as Dict
 import Html exposing (button, div, h1, input, label, p, text)
 import Html.App
 import Html.Events exposing (onClick)
 import Components.Header as Header
 import Components.SideBar as SideBar
 import Task as Task
+import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
 import Tasks.FetchConversations exposing (fetchConversations)
 import Decoders.Conversation exposing (Conversation)
@@ -26,6 +28,7 @@ type alias Model =
     { activeSection : SideBar.Section
     , conversations : List Conversation
     , messagePane : Messages.Model
+    , users : Dict.Dict Int User
     }
 
 
@@ -34,6 +37,7 @@ initialModel =
     { activeSection = SideBar.Messages
     , conversations = []
     , messagePane = Messages.initialModel
+    , users = Dict.empty
     }
 
 
@@ -52,7 +56,22 @@ update msg model loginInfo =
         FetchResponse response ->
             case response of
                 Ok conversations ->
-                    ( { model | conversations = conversations }, Cmd.none )
+                    let
+                        users =
+                            Dict.fromList <|
+                                List.concat
+                                    [ Dict.toList model.users
+                                    , List.map (\u -> ( u.id, u )) <|
+                                        List.concat <|
+                                            List.map (\c -> [ c.userA, c.userB ]) conversations
+                                    ]
+                    in
+                        ( { model
+                            | conversations = conversations
+                            , users = users
+                          }
+                        , Cmd.none
+                        )
 
                 Err error ->
                     let
