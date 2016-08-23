@@ -48,12 +48,20 @@ update msg ({ loginScreen } as model) =
 
                             Nothing ->
                                 LoggedOut
+
+                    ( userModel, userCmd ) =
+                        case info of
+                            Just loginInfo ->
+                                UserHome.update UserHome.FetchMessages model.userHome loginInfo
+
+                            Nothing ->
+                                ( model.userHome, Cmd.none )
                 in
                     ( { model
                         | loginScreen = loginScreen
                         , authStatus = authStatus
                       }
-                    , Cmd.map LoginMsg cmd
+                    , Cmd.batch [ Cmd.map LoginMsg cmd, Cmd.map UserMsg userCmd ]
                     )
 
         UserMsg subMsg ->

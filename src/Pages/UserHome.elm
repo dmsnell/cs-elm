@@ -101,7 +101,6 @@ view model info =
     div []
         [ Html.App.map HeaderMsg Header.view
         , Html.App.map SideBarMsg SideBar.view
-        , button [ onClick FetchMessages ] [ text "Fetch Messages" ]
         , div []
             [ h1 [] [ text <| toString model.activeSection ]
             , Html.App.map ConversationMsg <| Messages.view model.messagePane model.conversations
