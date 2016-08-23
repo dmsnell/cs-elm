@@ -1,7 +1,7 @@
 module Pages.UserHome exposing (..)
 
 import Cmd.Extra exposing (message)
-import Dict as Dict
+import Dict exposing (Dict)
 import Html exposing (button, div, h1, input, label, p, text)
 import Html.App
 import Html.Events exposing (onClick)
@@ -45,6 +45,15 @@ fetchMessages loginInfo =
     Task.perform FetchResponse FetchResponse <| fetchConversations loginInfo
 
 
+mergeUsers : Dict Int User -> List User -> Dict Int User
+mergeUsers existing new =
+    Dict.fromList <|
+        List.concat
+            [ Dict.toList existing
+            , List.map (\u -> ( u.id, u )) new
+            ]
+
+
 update : Msg -> Model -> LoginInfo -> ( Model, Cmd Msg )
 update msg model loginInfo =
     case msg of
@@ -59,13 +68,10 @@ update msg model loginInfo =
                 Ok conversations ->
                     let
                         users =
-                            Dict.fromList <|
-                                List.concat
-                                    [ Dict.toList model.users
-                                    , List.map (\u -> ( u.id, u )) <|
-                                        List.concat <|
-                                            List.map (\c -> [ c.userA, c.userB ]) conversations
-                                    ]
+                            conversations
+                                |> List.map (\c -> [ c.userA, c.userB ])
+                                |> List.concat
+                                |> mergeUsers model.users
                     in
                         ( { model
                             | conversations = conversations
