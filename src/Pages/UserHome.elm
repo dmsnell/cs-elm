@@ -20,7 +20,6 @@ type Msg
     | HeaderMsg Header.Msg
     | SideBarMsg SideBar.Msg
     | ConversationMsg Messages.Msg
-    | FetchMessages
     | FetchResponse (Result String (List Conversation))
 
 
@@ -41,6 +40,11 @@ initialModel =
     }
 
 
+fetchMessages : LoginInfo -> Cmd Msg
+fetchMessages loginInfo =
+    Task.perform FetchResponse FetchResponse <| fetchConversations loginInfo
+
+
 update : Msg -> Model -> LoginInfo -> ( Model, Cmd Msg )
 update msg model loginInfo =
     case msg of
@@ -49,9 +53,6 @@ update msg model loginInfo =
 
         HeaderMsg subMsg ->
             ( model, message Logout )
-
-        FetchMessages ->
-            ( model, Task.perform FetchResponse FetchResponse <| fetchConversations loginInfo )
 
         FetchResponse response ->
             case response of
