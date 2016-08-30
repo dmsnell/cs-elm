@@ -5,14 +5,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 
 
-type Field
-    = Email
-    | Password
-
-
 type Msg
     = SubmitLogin
-    | Update Field String
+    | UpdateEmail String
+    | UpdatePassword String
 
 
 type alias Model =
@@ -28,23 +24,17 @@ initialModel =
     }
 
 
-update : msg -> Msg -> Model -> ( Model, Maybe msg )
+update : Cmd msg -> Msg -> Model -> ( Model, Cmd msg )
 update onSubmit msg model =
     case msg of
         SubmitLogin ->
-            ( model, Just onSubmit )
+            ( model, onSubmit )
 
-        Update field value ->
-            let
-                next =
-                    case field of
-                        Email ->
-                            { model | email = value }
+        UpdateEmail value ->
+            ( { model | email = value }, Cmd.none )
 
-                        Password ->
-                            { model | password = value }
-            in
-                ( next, Nothing )
+        UpdatePassword value ->
+            ( { model | password = value }, Cmd.none )
 
 
 view : Model -> Html.Html Msg
@@ -53,11 +43,11 @@ view model =
         [ text "Login"
         , div []
             [ label [ for "email" ] [ text "Email" ]
-            , input [ name "email", value model.email, onInput (Update Email) ] []
+            , input [ name "email", value model.email, onInput UpdateEmail ] []
             ]
         , div []
             [ label [ for "password" ] [ text "Password" ]
-            , input [ type' "password", name "password", value model.password, onInput (Update Password) ] []
+            , input [ type' "password", name "password", value model.password, onInput UpdatePassword ] []
             ]
         , button [ onClick SubmitLogin ] [ text "Login" ]
         ]

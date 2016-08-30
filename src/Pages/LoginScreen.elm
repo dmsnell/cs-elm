@@ -47,15 +47,13 @@ update msg model =
 
         FormMsg formMsg ->
             let
-                ( loginForm, action ) =
-                    Dialog.update SubmitLogin formMsg model.loginForm
+                ( loginForm, cmd ) =
+                    Dialog.update
+                        (fetchUserToken (requestLoginToken model.loginForm))
+                        formMsg
+                        model.loginForm
             in
-                case action of
-                    Just SubmitLogin ->
-                        ( model, fetchUserToken (requestLoginToken model.loginForm), Nothing )
-
-                    _ ->
-                        ( { model | loginForm = loginForm }, Cmd.none, Nothing )
+                ( { model | loginForm = loginForm }, cmd, Nothing )
 
 
 view : Model -> Html.Html Msg
