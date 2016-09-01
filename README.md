@@ -41,4 +41,5 @@ Here is how we can open Chrome on Mac OS X:
 open /Applications/Google\ Chrome.app --args --disable-web-security --user-data-dir=~/Downloads/ChromeData
 ```
 
-Finally, navigate to the app itself inside of the browser at localhost:8000/src/App.elm 
+Finally, navigate to the app itself inside of the browser at 
+[localhost:8000/src/App.elm](localhost:8000/src/App.elm) 
