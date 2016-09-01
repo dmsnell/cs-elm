@@ -78,7 +78,7 @@ decodeUser =
     decode User.User
         |> required "id" int
         |> required "name" string
-        |> required "picture_url" ((maybe string) `andThen` decodeAvatar)
+        |> required "picture_url" (string `andThen` decodeAvatar)
         |> required "active" bool
         |> required "bio" string
         |> required "zipcode" (string `andThen` decodeZipcode)
@@ -87,11 +87,12 @@ decodeUser =
         |> required "is_educator" (bool `andThen` decodeMemberRole)
 
 
-decodeAvatar : Maybe String -> Decoder String
+decodeAvatar : String -> Decoder String
 decodeAvatar url =
     succeed <|
-        Maybe.withDefault
+        if String.isEmpty url then
             User.defaultAvatarUrl
+        else
             url
 
 

@@ -10,6 +10,8 @@ type alias Conversation =
     , title : String
     , dateCreated : Date
     , messages : List Message
+    , leftUserId : Int
+    , rightUserId : Int
     }
 
 
@@ -19,4 +21,6 @@ emptyConversation =
     , title = ""
     , dateCreated = fromParts 2000 Date.Jan 1 0 0 0 0
     , messages = []
+    , leftUserId = 0
+    , rightUserId = 0
     }

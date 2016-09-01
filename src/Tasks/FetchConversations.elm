@@ -28,11 +28,13 @@ fetchConversations loginInfo =
 
 
 apiToConversation : ApiConversation -> Conversation
-apiToConversation { id, title, dateCreated, messages } =
+apiToConversation { id, title, dateCreated, messages, userA, userB } =
     { id = id
     , title = title
     , dateCreated = dateCreated
     , messages = List.map apiToMessage messages
+    , leftUserId = userA.id
+    , rightUserId = userB.id
     }
 
 

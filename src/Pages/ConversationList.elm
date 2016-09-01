@@ -7,6 +7,7 @@ import Html.App
 import Components.ConversationDetail as Detail
 import Components.ConversationSummary as Summary
 import Models.Conversation exposing (Conversation, emptyConversation)
+import Models.User exposing (User, emptyUser)
 
 
 type Msg
@@ -37,8 +38,8 @@ update msg model =
             ( { model | selectedConversation = Nothing }, Cmd.none )
 
 
-view : Model -> Dict Int Conversation -> Html.Html Msg
-view model conversations =
+view : Model -> Dict Int Conversation -> Dict Int User -> Html.Html Msg
+view model conversations users =
     case model.selectedConversation of
         Just id ->
             let
@@ -55,5 +56,5 @@ view model conversations =
                 [ div [] <|
                     List.map
                         (Html.App.map SummaryMsg)
-                        (List.map Summary.view <| Dict.values conversations)
+                        (List.map (Summary.view users) <| Dict.values conversations)
                 ]
