@@ -1,5 +1,6 @@
 module Components.ConversationDetail exposing (..)
 
+import Date
 import Html exposing (div, ul, li, p, text)
 import Html.Attributes exposing (..)
 import Components.MessageDetail as MessageDetail
@@ -18,5 +19,10 @@ view { title, messages } myUserId left right =
                 ]
             ]
             [ text title ]
-        , div [] <| List.map (MessageDetail.view myUserId left right) messages
+        , div []
+            (messages
+                |> List.sortBy (.dateCreated >> Date.toTime)
+                |> List.reverse
+                |> List.map (MessageDetail.view myUserId left right)
+            )
         ]

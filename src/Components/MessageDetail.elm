@@ -1,5 +1,7 @@
 module Components.MessageDetail exposing (..)
 
+import Date exposing (Date)
+import Date.Extra exposing (toFormattedString)
 import Html exposing (div, img, text)
 import Html.Attributes exposing (..)
 import Models.Message exposing (Message)
@@ -23,7 +25,7 @@ userProfile user =
 
 
 view : Int -> User -> User -> Message -> Html.Html msg
-view myUserId left right { content, senderId } =
+view myUserId left right { content, dateCreated, senderId } =
     let
         ( user, side ) =
             if left.id == senderId then
@@ -65,7 +67,15 @@ view myUserId left right { content, senderId } =
                         ]
                     ]
                     []
-                , text name
+                , div
+                    [ style
+                        [ ( "display", "inline-block" )
+                        , ( "text-align", side )
+                        ]
+                    ]
+                    [ div [] [ text name ]
+                    , div [] [ text <| dateDisplay dateCreated ]
+                    ]
                 ]
             , div [ style [ ( "clear", "both" ) ] ] []
             , div
@@ -78,3 +88,9 @@ view myUserId left right { content, senderId } =
                 ]
                 [ text content ]
             ]
+
+
+dateDisplay : Date -> String
+dateDisplay date =
+    date
+        |> toFormattedString "EEEE, MMMM d, y, h:mm b"

@@ -64,5 +64,8 @@ view model conversations myUserId users =
                     [ div [] <|
                         List.map
                             (Html.App.map SummaryMsg)
-                            (List.map (Summary.view myUserId users) <| Dict.values conversations)
+                            (conversations
+                                |> Dict.values
+                                |> List.map (Summary.view myUserId users)
+                            )
                     ]
