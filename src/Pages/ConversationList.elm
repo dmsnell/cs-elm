@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Html.App
 import Components.ConversationDetail as Detail
 import Components.ConversationSummary as Summary
+import Models.Conversation as Conversation
 import Models.Conversation exposing (Conversation, emptyConversation)
 import Models.User exposing (User, emptyUser)
 
@@ -45,10 +46,13 @@ view model conversations users =
             let
                 conversation =
                     Maybe.withDefault emptyConversation <| Dict.get id conversations
+
+                ( left, right ) =
+                    Conversation.users users conversation
             in
                 div []
                     [ button [ onClick UnselectMessage ] [ text "Back" ]
-                    , Detail.view conversation
+                    , Detail.view conversation left right
                     ]
 
         Nothing ->

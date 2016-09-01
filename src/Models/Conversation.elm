@@ -1,8 +1,10 @@
 module Models.Conversation exposing (..)
 
+import Dict exposing (Dict)
 import Date exposing (Date)
 import Date.Extra exposing (fromParts)
 import Models.Message exposing (Message)
+import Models.User exposing (User, emptyUser)
 
 
 type alias Conversation =
@@ -24,3 +26,19 @@ emptyConversation =
     , leftUserId = 0
     , rightUserId = 0
     }
+
+
+users : Dict Int User -> Conversation -> ( User, User )
+users userDict conversation =
+    let
+        left =
+            userDict
+                |> Dict.get conversation.leftUserId
+                |> Maybe.withDefault emptyUser
+
+        right =
+            userDict
+                |> Dict.get conversation.rightUserId
+                |> Maybe.withDefault emptyUser
+    in
+        ( left, right )
