@@ -12,7 +12,7 @@ import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type alias ConversationTask =
-    Task (Result String ( List Conversation, Dict Int User )) (Result String ( List Conversation, Dict Int User ))
+    Task (Result String ( Dict Int Conversation, Dict Int User )) (Result String ( Dict Int Conversation, Dict Int User ))
 
 
 fetchConversations : LoginInfo -> ConversationTask
@@ -59,7 +59,7 @@ extractUsers { userA, userB } =
         b
 
 
-decodeResponse : String -> Result String ( List Conversation, Dict Int User )
+decodeResponse : String -> Result String ( Dict Int Conversation, Dict Int User )
 decodeResponse json =
     let
         decoded =
@@ -69,7 +69,10 @@ decodeResponse json =
             Ok data ->
                 let
                     conversations =
-                        List.map apiToConversation data
+                        data
+                            |> List.map apiToConversation
+                            |> List.map (\c -> ( c.id, c ))
+                            |> Dict.fromList
 
                     users =
                         List.foldr Dict.union Dict.empty (List.map extractUsers data)
@@ -80,7 +83,7 @@ decodeResponse json =
                 Err <| error
 
 
-handleResponse : Http.Response -> Result String ( List Conversation, Dict Int User )
+handleResponse : Http.Response -> Result String ( Dict Int Conversation, Dict Int User )
 handleResponse { status, statusText, value } =
     case status of
         200 ->
@@ -98,7 +101,7 @@ handleResponse { status, statusText, value } =
             Err <| "Unrecognized error: " ++ statusText
 
 
-errorText : Http.RawError -> Result String ( List Conversation, Dict Int User )
+errorText : Http.RawError -> Result String ( Dict Int Conversation, Dict Int User )
 errorText error =
     case error of
         Http.RawTimeout ->

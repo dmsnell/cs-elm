@@ -19,7 +19,7 @@ type Msg
     | HeaderMsg Header.Msg
     | SideBarMsg SideBar.Msg
     | ConversationMsg Messages.Msg
-    | FetchResponse (Result String ( List Conversation, Dict Int User ))
+    | FetchResponse (Result String ( Dict Int Conversation, Dict Int User ))
 
 
 type alias Model =
@@ -64,19 +64,13 @@ update msg model loginInfo =
 
         FetchResponse response ->
             case response of
-                Ok ( conversationList, users ) ->
-                    let
-                        conversations =
-                            conversationList
-                                |> List.map (\c -> ( c.id, c ))
-                                |> Dict.fromList
-                    in
-                        ( { model
-                            | conversations = conversations
-                            , users = Dict.union model.users users
-                          }
-                        , Cmd.none
-                        )
+                Ok ( conversations, users ) ->
+                    ( { model
+                        | conversations = Dict.union model.conversations conversations
+                        , users = Dict.union model.users users
+                      }
+                    , Cmd.none
+                    )
 
                 Err error ->
                     let
