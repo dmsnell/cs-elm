@@ -41,24 +41,28 @@ update msg model =
 
 view : Model -> Dict Int Conversation -> Dict Int User -> Html.Html Msg
 view model conversations users =
-    case model.selectedConversation of
-        Just id ->
-            let
-                conversation =
-                    Maybe.withDefault emptyConversation <| Dict.get id conversations
+    if Dict.size conversations == 0 then
+        div []
+            [ text "Loading…" ]
+    else
+        case model.selectedConversation of
+            Just id ->
+                let
+                    conversation =
+                        Maybe.withDefault emptyConversation <| Dict.get id conversations
 
-                ( left, right ) =
-                    Conversation.users users conversation
-            in
+                    ( left, right ) =
+                        Conversation.users users conversation
+                in
+                    div []
+                        [ button [ onClick UnselectMessage ] [ text "Back" ]
+                        , Detail.view conversation left right
+                        ]
+
+            Nothing ->
                 div []
-                    [ button [ onClick UnselectMessage ] [ text "Back" ]
-                    , Detail.view conversation left right
+                    [ div [] <|
+                        List.map
+                            (Html.App.map SummaryMsg)
+                            (List.map (Summary.view users) <| Dict.values conversations)
                     ]
-
-        Nothing ->
-            div []
-                [ div [] <|
-                    List.map
-                        (Html.App.map SummaryMsg)
-                        (List.map (Summary.view users) <| Dict.values conversations)
-                ]
