@@ -1,5 +1,6 @@
 module Tasks.FetchConversations exposing (..)
 
+import Dict exposing (Dict)
 import Http
 import Json.Decode
 import Task exposing (Task)
@@ -11,7 +12,7 @@ import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type alias ConversationTask =
-    Task (Result String ( List Conversation, List User )) (Result String ( List Conversation, List User ))
+    Task (Result String ( List Conversation, Dict Int User )) (Result String ( List Conversation, Dict Int User ))
 
 
 fetchConversations : LoginInfo -> ConversationTask
@@ -46,7 +47,19 @@ apiToMessage { id, conversationId, content, dateCreated, senderId, hasBeenViewed
     }
 
 
-decodeResponse : String -> Result String ( List Conversation, List User )
+extractUsers : ApiConversation -> Dict Int User
+extractUsers { userA, userB } =
+    let
+        a =
+            Dict.insert userA.id userA Dict.empty
+
+        b =
+            Dict.insert userB.id userB a
+    in
+        b
+
+
+decodeResponse : String -> Result String ( List Conversation, Dict Int User )
 decodeResponse json =
     let
         decoded =
@@ -54,13 +67,20 @@ decodeResponse json =
     in
         case decoded of
             Ok data ->
-                Ok <| ( List.map apiToConversation data, [] )
+                let
+                    conversations =
+                        List.map apiToConversation data
+
+                    users =
+                        List.foldr Dict.union Dict.empty (List.map extractUsers data)
+                in
+                    Ok ( conversations, users )
 
             Err error ->
                 Err <| error
 
 
-handleResponse : Http.Response -> Result String ( List Conversation, List User )
+handleResponse : Http.Response -> Result String ( List Conversation, Dict Int User )
 handleResponse { status, statusText, value } =
     case status of
         200 ->
@@ -78,7 +98,7 @@ handleResponse { status, statusText, value } =
             Err <| "Unrecognized error: " ++ statusText
 
 
-errorText : Http.RawError -> Result String ( List Conversation, List User )
+errorText : Http.RawError -> Result String ( List Conversation, Dict Int User )
 errorText error =
     case error of
         Http.RawTimeout ->
