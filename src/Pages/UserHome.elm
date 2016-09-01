@@ -109,6 +109,11 @@ view model info =
         , Html.App.map SideBarMsg SideBar.view
         , div []
             [ h1 [] [ text <| toString model.activeSection ]
-            , Html.App.map ConversationMsg <| Messages.view model.messagePane model.conversations
+            , case model.activeSection of
+                SideBar.Messages ->
+                    Html.App.map ConversationMsg <| Messages.view model.messagePane model.conversations
+
+                _ ->
+                    div [] [ text "No content yet" ]
             ]
         ]
