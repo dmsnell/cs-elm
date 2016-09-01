@@ -13,17 +13,20 @@ import Models.User exposing (User, emptyUser)
 
 type Msg
     = SummaryMsg Summary.Msg
+    | DetailMsg Detail.Msg
     | UnselectMessage
 
 
 type alias Model =
     { selectedConversation : Maybe Int
+    , detail : Detail.Model
     }
 
 
 initialModel : Model
 initialModel =
     { selectedConversation = Nothing
+    , detail = Detail.emptyModel
     }
 
 
@@ -34,6 +37,13 @@ update msg model =
             case subMsg of
                 Summary.SelectConversation id ->
                     ( { model | selectedConversation = Just id }, Cmd.none )
+
+        DetailMsg subMsg ->
+            let
+                ( detail, cmd ) =
+                    Detail.update subMsg model.detail
+            in
+                ( { model | detail = detail }, cmd )
 
         UnselectMessage ->
             ( { model | selectedConversation = Nothing }, Cmd.none )
@@ -56,7 +66,7 @@ view model conversations myUserId users =
                 in
                     div []
                         [ button [ onClick UnselectMessage ] [ text "Back" ]
-                        , Detail.view conversation myUserId left right
+                        , Html.App.map DetailMsg <| Detail.view conversation myUserId left right
                         ]
 
             Nothing ->
