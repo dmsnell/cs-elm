@@ -8,17 +8,17 @@ import String as String
 import Models.User as User
 
 
-type alias Conversation =
+type alias ApiConversation =
     { id : Int
     , title : String
     , dateCreated : Date
-    , messages : List Message
+    , messages : List ApiMessage
     , userA : User.User
     , userB : User.User
     }
 
 
-emptyConversation : Conversation
+emptyConversation : ApiConversation
 emptyConversation =
     { id = 0
     , title = ""
@@ -29,7 +29,7 @@ emptyConversation =
     }
 
 
-type alias Message =
+type alias ApiMessage =
     { content : String
     , id : Int
     , conversationId : Int
@@ -39,15 +39,15 @@ type alias Message =
     }
 
 
-decodeConversations : Decoder (List Conversation)
+decodeConversations : Decoder (List ApiConversation)
 decodeConversations =
     Json.Decode.at [ "data" ] <|
         Json.Decode.list decodeConversation
 
 
-decodeConversation : Decoder Conversation
+decodeConversation : Decoder ApiConversation
 decodeConversation =
-    decode Conversation
+    decode ApiConversation
         |> required "id" int
         |> required "title" string
         |> required "date_created" (string `andThen` decodeDate)
@@ -62,9 +62,9 @@ decodeDate t =
         (Result.withDefault (fromParts 2000 Date.Jan 1 0 0 0 0) (Date.fromString t))
 
 
-decodeMessage : Decoder Message
+decodeMessage : Decoder ApiMessage
 decodeMessage =
-    decode Message
+    decode ApiMessage
         |> required "content" string
         |> required "id" int
         |> required "conversation_id" int

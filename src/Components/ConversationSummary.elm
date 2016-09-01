@@ -3,7 +3,7 @@ module Components.ConversationSummary exposing (..)
 import Html exposing (div, img, p, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Decoders.Conversation exposing (Conversation)
+import Models.Conversation exposing (Conversation)
 
 
 type Msg
@@ -11,11 +11,7 @@ type Msg
 
 
 view : Conversation -> Html.Html Msg
-view { id, title, messages, userB } =
+view { id, title, messages } =
     div [ onClick <| SelectConversation id ]
-        [ img [ src userB.avatarUrl ] []
-        , div []
-            [ div [] [ text userB.name ]
-            , p [] [ text userB.biography ]
-            ]
+        [ div [] [ text title ]
         ]

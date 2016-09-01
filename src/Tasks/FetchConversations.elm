@@ -3,12 +3,15 @@ module Tasks.FetchConversations exposing (..)
 import Http
 import Json.Decode
 import Task exposing (Task)
-import Decoders.Conversation exposing (Conversation, decodeConversations)
+import Decoders.Conversation exposing (ApiConversation, ApiMessage, decodeConversations)
+import Models.Conversation exposing (Conversation)
+import Models.Message exposing (Message)
+import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type alias ConversationTask =
-    Task (Result String (List Conversation)) (Result String (List Conversation))
+    Task (Result String ( List Conversation, List User )) (Result String ( List Conversation, List User ))
 
 
 fetchConversations : LoginInfo -> ConversationTask
@@ -23,7 +26,27 @@ fetchConversations loginInfo =
         |> Task.mapError errorText
 
 
-decodeResponse : String -> Result String (List Conversation)
+apiToConversation : ApiConversation -> Conversation
+apiToConversation { id, title, dateCreated, messages } =
+    { id = id
+    , title = title
+    , dateCreated = dateCreated
+    , messages = List.map apiToMessage messages
+    }
+
+
+apiToMessage : ApiMessage -> Message
+apiToMessage { id, conversationId, content, dateCreated, senderId, hasBeenViewed } =
+    { id = id
+    , conversationId = conversationId
+    , content = content
+    , dateCreated = dateCreated
+    , senderId = senderId
+    , hasBeenViewed = hasBeenViewed
+    }
+
+
+decodeResponse : String -> Result String ( List Conversation, List User )
 decodeResponse json =
     let
         decoded =
@@ -31,13 +54,13 @@ decodeResponse json =
     in
         case decoded of
             Ok data ->
-                Ok <| data
+                Ok <| ( List.map apiToConversation data, [] )
 
             Err error ->
                 Err <| error
 
 
-handleResponse : Http.Response -> Result String (List Conversation)
+handleResponse : Http.Response -> Result String ( List Conversation, List User )
 handleResponse { status, statusText, value } =
     case status of
         200 ->
@@ -55,7 +78,7 @@ handleResponse { status, statusText, value } =
             Err <| "Unrecognized error: " ++ statusText
 
 
-errorText : Http.RawError -> Result String (List Conversation)
+errorText : Http.RawError -> Result String ( List Conversation, List User )
 errorText error =
     case error of
         Http.RawTimeout ->

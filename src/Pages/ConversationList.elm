@@ -1,13 +1,12 @@
 module Pages.ConversationList exposing (..)
 
-import Dict as Dict
+import Dict exposing (Dict)
 import Html exposing (button, div, ul, li, text)
 import Html.Events exposing (onClick)
 import Html.App
 import Components.ConversationDetail as Detail
 import Components.ConversationSummary as Summary
-import Decoders.Conversation exposing (Conversation, emptyConversation)
-import Models.User exposing (User)
+import Models.Conversation exposing (Conversation, emptyConversation)
 
 
 type Msg
@@ -38,13 +37,13 @@ update msg model =
             ( { model | selectedConversation = Nothing }, Cmd.none )
 
 
-view : Model -> List Conversation -> Html.Html Msg
+view : Model -> Dict Int Conversation -> Html.Html Msg
 view model conversations =
     case model.selectedConversation of
         Just id ->
             let
                 conversation =
-                    Maybe.withDefault emptyConversation <| List.head conversations
+                    Maybe.withDefault emptyConversation <| Dict.get id conversations
             in
                 div []
                     [ button [ onClick UnselectMessage ] [ text "Back" ]
@@ -56,5 +55,5 @@ view model conversations =
                 [ div [] <|
                     List.map
                         (Html.App.map SummaryMsg)
-                        (List.map Summary.view conversations)
+                        (List.map Summary.view <| Dict.values conversations)
                 ]

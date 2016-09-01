@@ -7,10 +7,10 @@ import Html.App
 import Components.Header as Header
 import Components.SideBar as SideBar
 import Task as Task
-import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
 import Tasks.FetchConversations exposing (fetchConversations)
-import Decoders.Conversation exposing (Conversation)
+import Models.Conversation exposing (Conversation)
+import Models.User exposing (User, emptyUser)
 import Pages.ConversationList as Messages
 
 
@@ -19,12 +19,12 @@ type Msg
     | HeaderMsg Header.Msg
     | SideBarMsg SideBar.Msg
     | ConversationMsg Messages.Msg
-    | FetchResponse (Result String (List Conversation))
+    | FetchResponse (Result String ( List Conversation, List User ))
 
 
 type alias Model =
     { activeSection : SideBar.Section
-    , conversations : List Conversation
+    , conversations : Dict Int Conversation
     , messagePane : Messages.Model
     , users : Dict.Dict Int User
     }
@@ -33,7 +33,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { activeSection = SideBar.Messages
-    , conversations = []
+    , conversations = Dict.empty
     , messagePane = Messages.initialModel
     , users = Dict.empty
     }
@@ -64,11 +64,16 @@ update msg model loginInfo =
 
         FetchResponse response ->
             case response of
-                Ok conversations ->
+                Ok ( conversationList, userList ) ->
                     let
+                        conversations =
+                            conversationList
+                                |> List.map (\c -> ( c.id, c ))
+                                |> Dict.fromList
+
                         users =
-                            conversations
-                                |> List.map (\c -> [ c.userA, c.userB ])
+                            userList
+                                |> List.map (\c -> [ emptyUser, emptyUser ])
                                 |> List.concat
                                 |> mergeUsers model.users
                     in

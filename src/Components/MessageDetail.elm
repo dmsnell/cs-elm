@@ -2,7 +2,7 @@ module Components.MessageDetail exposing (..)
 
 import Html exposing (div, img, text)
 import Html.Attributes exposing (..)
-import Decoders.Conversation exposing (Message)
+import Models.Message exposing (Message)
 import Models.User exposing (User)
 
 
@@ -22,9 +22,8 @@ userProfile user =
         ]
 
 
-view : Message -> User -> Html.Html msg
-view { content } user =
+view : Message -> Html.Html msg
+view { content } =
     div []
-        [ userProfile user
-        , div [] [ text content ]
+        [ div [] [ text content ]
         ]
