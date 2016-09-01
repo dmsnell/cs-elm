@@ -9,6 +9,7 @@ import Components.SideBar as SideBar
 import Task as Task
 import Tasks.AuthenticateUser exposing (LoginInfo)
 import Tasks.FetchConversations exposing (fetchConversations)
+import Tasks.FetchMe exposing (fetchMe)
 import Models.Conversation exposing (Conversation)
 import Models.User exposing (User, emptyUser)
 import Pages.ConversationList as Messages
@@ -20,6 +21,8 @@ type Msg
     | SideBarMsg SideBar.Msg
     | ConversationMsg Messages.Msg
     | FetchResponse (Result String ( Dict Int Conversation, Dict Int User ))
+    | FetchMeFailed String
+    | FetchMeLoaded (Result String User)
 
 
 type alias Model =
@@ -27,6 +30,7 @@ type alias Model =
     , conversations : Dict Int Conversation
     , messagePane : Messages.Model
     , users : Dict.Dict Int User
+    , myUserId : Int
     }
 
 
@@ -36,12 +40,18 @@ initialModel =
     , conversations = Dict.empty
     , messagePane = Messages.initialModel
     , users = Dict.empty
+    , myUserId = 0
     }
 
 
 fetchMessages : LoginInfo -> Cmd Msg
 fetchMessages loginInfo =
     Task.perform FetchResponse FetchResponse <| fetchConversations loginInfo
+
+
+fetchMyUser : LoginInfo -> Cmd Msg
+fetchMyUser loginInfo =
+    Task.perform FetchMeFailed FetchMeLoaded <| fetchMe loginInfo
 
 
 mergeUsers : Dict Int User -> List User -> Dict Int User
@@ -79,6 +89,22 @@ update msg model loginInfo =
                     in
                         ( model, Cmd.none )
 
+        FetchMeFailed error ->
+            ( model, Cmd.none )
+
+        FetchMeLoaded result ->
+            case result of
+                Ok me ->
+                    ( { model
+                        | myUserId = me.id
+                        , users = Dict.insert me.id me model.users
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( model, Cmd.none )
+
         SideBarMsg subMsg ->
             case subMsg of
                 SideBar.Select section ->
@@ -104,7 +130,7 @@ view model info =
             [ h1 [] [ text <| toString model.activeSection ]
             , case model.activeSection of
                 SideBar.Messages ->
-                    Html.App.map ConversationMsg <| Messages.view model.messagePane model.conversations model.users
+                    Html.App.map ConversationMsg <| Messages.view model.messagePane model.conversations model.myUserId model.users
 
                 _ ->
                     div [] [ text "No content yet" ]

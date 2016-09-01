@@ -28,17 +28,36 @@ emptyConversation =
     }
 
 
-users : Dict Int User -> Conversation -> ( User, User )
-users userDict conversation =
+users : Int -> Dict Int User -> Conversation -> ( User, User )
+users myUserId userDict { leftUserId, rightUserId } =
     let
+        involvesMe =
+            List.member myUserId [ leftUserId, rightUserId ]
+
+        leftId =
+            if involvesMe then
+                myUserId
+            else
+                leftUserId
+
+        rightId =
+            if involvesMe then
+                (if myUserId == leftUserId then
+                    rightUserId
+                 else
+                    leftUserId
+                )
+            else
+                rightUserId
+
         left =
             userDict
-                |> Dict.get conversation.leftUserId
+                |> Dict.get leftId
                 |> Maybe.withDefault emptyUser
 
         right =
             userDict
-                |> Dict.get conversation.rightUserId
+                |> Dict.get rightId
                 |> Maybe.withDefault emptyUser
     in
         ( left, right )

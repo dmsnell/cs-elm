@@ -7,8 +7,8 @@ import Models.Conversation exposing (Conversation)
 import Models.User exposing (User)
 
 
-view : Conversation -> User -> User -> Html.Html msg
-view { title, messages } left right =
+view : Conversation -> Int -> User -> User -> Html.Html msg
+view { title, messages } myUserId left right =
     div []
         [ div
             [ style
@@ -18,5 +18,5 @@ view { title, messages } left right =
                 ]
             ]
             [ text title ]
-        , div [] <| List.map (MessageDetail.view left right) messages
+        , div [] <| List.map (MessageDetail.view myUserId left right) messages
         ]

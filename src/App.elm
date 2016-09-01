@@ -49,19 +49,25 @@ update msg ({ loginScreen } as model) =
                             Nothing ->
                                 LoggedOut
 
-                    fetchMessages =
+                    ( fetchMyUser, fetchMessages ) =
                         case info of
                             Just loginInfo ->
-                                UserHome.fetchMessages loginInfo
+                                ( UserHome.fetchMessages loginInfo
+                                , UserHome.fetchMyUser loginInfo
+                                )
 
                             Nothing ->
-                                Cmd.none
+                                ( Cmd.none, Cmd.none )
                 in
                     ( { model
                         | loginScreen = loginScreen
                         , authStatus = authStatus
                       }
-                    , Cmd.batch [ Cmd.map LoginMsg cmd, Cmd.map UserMsg fetchMessages ]
+                    , Cmd.batch
+                        [ Cmd.map LoginMsg cmd
+                        , Cmd.map UserMsg fetchMessages
+                        , Cmd.map UserMsg fetchMyUser
+                        ]
                     )
 
         UserMsg subMsg ->

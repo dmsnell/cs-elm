@@ -39,8 +39,8 @@ update msg model =
             ( { model | selectedConversation = Nothing }, Cmd.none )
 
 
-view : Model -> Dict Int Conversation -> Dict Int User -> Html.Html Msg
-view model conversations users =
+view : Model -> Dict Int Conversation -> Int -> Dict Int User -> Html.Html Msg
+view model conversations myUserId users =
     if Dict.size conversations == 0 then
         div []
             [ text "Loading…" ]
@@ -52,11 +52,11 @@ view model conversations users =
                         Maybe.withDefault emptyConversation <| Dict.get id conversations
 
                     ( left, right ) =
-                        Conversation.users users conversation
+                        Conversation.users myUserId users conversation
                 in
                     div []
                         [ button [ onClick UnselectMessage ] [ text "Back" ]
-                        , Detail.view conversation left right
+                        , Detail.view conversation myUserId left right
                         ]
 
             Nothing ->
@@ -64,5 +64,5 @@ view model conversations users =
                     [ div [] <|
                         List.map
                             (Html.App.map SummaryMsg)
-                            (List.map (Summary.view users) <| Dict.values conversations)
+                            (List.map (Summary.view myUserId users) <| Dict.values conversations)
                     ]

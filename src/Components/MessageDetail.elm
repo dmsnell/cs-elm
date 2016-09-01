@@ -22,14 +22,23 @@ userProfile user =
         ]
 
 
-view : User -> User -> Message -> Html.Html msg
-view left right { content, senderId } =
+view : Int -> User -> User -> Message -> Html.Html msg
+view myUserId left right { content, senderId } =
     let
         ( user, side ) =
             if left.id == senderId then
                 ( left, "left" )
             else
                 ( right, "right" )
+
+        involvesMe =
+            List.member myUserId [ left.id, right.id ]
+
+        name =
+            if ("left" == side && involvesMe) then
+                "You"
+            else
+                user.name
     in
         div
             [ style
@@ -56,7 +65,7 @@ view left right { content, senderId } =
                         ]
                     ]
                     []
-                , text user.name
+                , text name
                 ]
             , div [ style [ ( "clear", "both" ) ] ] []
             , div

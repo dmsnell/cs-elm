@@ -4,7 +4,7 @@ import Date exposing (Date)
 import Date.Extra exposing (fromParts)
 import Json.Decode exposing (andThen, bool, int, maybe, string, float, succeed, Decoder)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, required)
-import String as String
+import Decoders.User exposing (decodeUser)
 import Models.User as User
 
 
@@ -71,54 +71,3 @@ decodeMessage =
         |> required "sender_user_id" int
         |> required "viewed" bool
         |> required "date_created" (string `andThen` decodeDate)
-
-
-decodeUser : Decoder User.User
-decodeUser =
-    decode User.User
-        |> required "id" int
-        |> required "name" string
-        |> required "picture_url" (string `andThen` decodeAvatar)
-        |> required "active" bool
-        |> required "bio" string
-        |> required "zipcode" (string `andThen` decodeZipcode)
-        |> required "website" (maybe string)
-        |> required "is_administrator" (bool `andThen` decodeSiteRole)
-        |> required "is_educator" (bool `andThen` decodeMemberRole)
-
-
-decodeAvatar : String -> Decoder String
-decodeAvatar url =
-    succeed <|
-        if String.isEmpty url then
-            User.defaultAvatarUrl
-        else
-            url
-
-
-decodeZipcode : String -> Decoder (Maybe Int)
-decodeZipcode z =
-    succeed <|
-        Result.toMaybe (String.toInt z)
-
-
-decodeSiteRole : Bool -> Decoder User.SiteRole
-decodeSiteRole role =
-    succeed <|
-        case role of
-            True ->
-                User.Administrator
-
-            False ->
-                User.Guest
-
-
-decodeMemberRole : Bool -> Decoder User.MemberRole
-decodeMemberRole role =
-    succeed <|
-        case role of
-            True ->
-                User.Educator
-
-            False ->
-                User.Partner

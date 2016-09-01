@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 import Html exposing (div, img, p, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Models.Conversation as Conversation
 import Models.Conversation exposing (Conversation)
 import Models.User exposing (User, emptyUser)
 
@@ -12,21 +13,23 @@ type Msg
     = SelectConversation Int
 
 
-view : Dict Int User -> Conversation -> Html.Html Msg
-view users { id, title, messages, leftUserId, rightUserId } =
+view : Int -> Dict Int User -> Conversation -> Html.Html Msg
+view myUserId users ({ id, title, messages } as conversation) =
     let
-        left =
-            users
-                |> Dict.get leftUserId
-                |> Maybe.withDefault emptyUser
+        ( left, right ) =
+            Conversation.users myUserId users conversation
 
-        right =
-            users
-                |> Dict.get rightUserId
-                |> Maybe.withDefault emptyUser
+        involvesMe =
+            List.member myUserId [ left.id, right.id ]
+
+        leftName =
+            if involvesMe then
+                "you"
+            else
+                left.name
     in
         div [ onClick <| SelectConversation id ]
-            [ div [] [ text <| "Between " ++ left.name ++ " and " ++ right.name ]
-            , img [ src left.avatarUrl, width 32 ] []
+            [ div [] [ text <| "Between " ++ leftName ++ " and " ++ right.name ]
+            , img [ src right.avatarUrl, width 32 ] []
             , div [ style [ ( "marginBottom", "2em" ) ] ] [ text title ]
             ]
