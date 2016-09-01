@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 import Html exposing (button, div, ul, li, text)
 import Html.Events exposing (onClick)
 import Html.App
+import Task exposing (Task)
 import Components.ConversationDetail as Detail
 import Components.ConversationSummary as Summary
 import Models.Conversation as Conversation
@@ -31,6 +32,11 @@ initialModel =
     }
 
 
+sendNewMessage : Task String String -> Cmd Msg
+sendNewMessage task =
+    Task.perform SendNewMessage SendNewMessage task
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -42,17 +48,20 @@ update msg model =
         DetailMsg subMsg ->
             let
                 ( detail, cmd ) =
-                    Detail.update subMsg model.detail
+                    Detail.update
+                        (sendNewMessage (Task.succeed model.detail.newMessage))
+                        subMsg
+                        model.detail
             in
                 ( { model | detail = detail }, cmd )
 
         UnselectMessage ->
             ( { model | selectedConversation = Nothing }, Cmd.none )
 
-        SendNewMessage msg ->
+        SendNewMessage result ->
             let
-                _ =
-                    Debug.log "Message" msg
+                x =
+                    Debug.log "Message" result
             in
                 ( model, Cmd.none )
 

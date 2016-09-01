@@ -118,7 +118,7 @@ update msg model loginInfo =
                 ( messagePane, cmd ) =
                     Messages.update subMsg model.messagePane
             in
-                ( { model | messagePane = messagePane }, Cmd.none )
+                ( { model | messagePane = messagePane }, Cmd.map ConversationMsg cmd )
 
 
 view : Model -> LoginInfo -> Html.Html Msg

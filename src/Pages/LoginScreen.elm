@@ -12,10 +12,6 @@ type Msg
     | LoginResponse (Result String LoginInfo)
 
 
-type ChildMsg
-    = SubmitLogin
-
-
 type alias Model =
     { loginForm : Dialog.Model
     , error : Maybe String

@@ -3,7 +3,7 @@ module Components.ConversationDetail exposing (..)
 import Date
 import Html exposing (button, div, ul, li, p, text, textarea)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Components.MessageDetail as MessageDetail
 import Models.Conversation exposing (Conversation)
 import Models.User exposing (User)
@@ -11,6 +11,7 @@ import Models.User exposing (User)
 
 type Msg
     = UpdateMessage String
+    | SubmitMessage
 
 
 type alias Model =
@@ -24,11 +25,14 @@ emptyModel =
     }
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
-update msg model =
+update : Cmd msg -> Msg -> Model -> ( Model, Cmd msg )
+update sendNewMessage msg model =
     case msg of
         UpdateMessage text ->
             ( { model | newMessage = text }, Cmd.none )
+
+        SubmitMessage ->
+            ( { model | newMessage = "Submitting…" }, sendNewMessage )
 
 
 newMessageForm : String -> Html.Html Msg
@@ -54,7 +58,7 @@ newMessageForm newMessage =
             ]
             [ text newMessage ]
         , div [ style [ ( "text-align", "right" ) ] ]
-            [ button [] [ text "Send Message" ]
+            [ button [ onClick SubmitMessage ] [ text "Send Message" ]
             ]
         ]
 
