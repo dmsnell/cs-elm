@@ -15,6 +15,7 @@ type Msg
     = SummaryMsg Summary.Msg
     | DetailMsg Detail.Msg
     | UnselectMessage
+    | SendNewMessage String
 
 
 type alias Model =
@@ -48,6 +49,13 @@ update msg model =
         UnselectMessage ->
             ( { model | selectedConversation = Nothing }, Cmd.none )
 
+        SendNewMessage msg ->
+            let
+                _ =
+                    Debug.log "Message" msg
+            in
+                ( model, Cmd.none )
+
 
 view : Model -> Dict Int Conversation -> Int -> Dict Int User -> Html.Html Msg
 view model conversations myUserId users =
@@ -66,7 +74,7 @@ view model conversations myUserId users =
                 in
                     div []
                         [ button [ onClick UnselectMessage ] [ text "Back" ]
-                        , Html.App.map DetailMsg <| Detail.view conversation myUserId left right
+                        , Html.App.map DetailMsg <| Detail.view model.detail conversation myUserId left right
                         ]
 
             Nothing ->

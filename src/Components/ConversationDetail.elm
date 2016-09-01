@@ -31,8 +31,8 @@ update msg model =
             ( { model | newMessage = text }, Cmd.none )
 
 
-newMessageForm : Html.Html Msg
-newMessageForm =
+newMessageForm : String -> Html.Html Msg
+newMessageForm newMessage =
     div
         [ style
             [ ( "margin", "auto" )
@@ -52,15 +52,15 @@ newMessageForm =
                 ]
             , onInput UpdateMessage
             ]
-            []
+            [ text newMessage ]
         , div [ style [ ( "text-align", "right" ) ] ]
             [ button [] [ text "Send Message" ]
             ]
         ]
 
 
-view : Conversation -> Int -> User -> User -> Html.Html Msg
-view { title, messages } myUserId left right =
+view : Model -> Conversation -> Int -> User -> User -> Html.Html Msg
+view model { title, messages } myUserId left right =
     div []
         [ div
             [ style
@@ -70,7 +70,7 @@ view { title, messages } myUserId left right =
                 ]
             ]
             [ text title ]
-        , newMessageForm
+        , newMessageForm model.newMessage
         , div []
             (messages
                 |> List.sortBy (.dateCreated >> Date.toTime)
