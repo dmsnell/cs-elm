@@ -2,13 +2,16 @@ module App exposing (main)
 
 import Html exposing (div, text)
 import Html.App
-import Pages.LoginScreen as LoginScreen
+import LoggedOut.Messages as LOMsg
+import LoggedOut.Model as LOModel
+import LoggedOut.Update as LOUpdate
+import LoggedOut.View as LOView
 import Pages.UserHome as UserHome
 import Tasks.AuthenticateUser exposing (LoginInfo)
 
 
 type Msg
-    = LoginMsg LoginScreen.Msg
+    = LoggedOutMsg LOMsg.Msg
     | UserMsg UserHome.Msg
 
 
@@ -19,7 +22,7 @@ type AuthenticationStatus
 
 type alias Model =
     { authStatus : AuthenticationStatus
-    , loginScreen : LoginScreen.Model
+    , loggedOut : LOModel.Model
     , userHome : UserHome.Model
     }
 
@@ -27,18 +30,18 @@ type alias Model =
 initialModel : Model
 initialModel =
     { authStatus = LoggedOut
-    , loginScreen = LoginScreen.initialModel
+    , loggedOut = LOModel.emptyModel
     , userHome = UserHome.initialModel
     }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ loginScreen } as model) =
+update msg model =
     case msg of
-        LoginMsg subMsg ->
+        LoggedOutMsg subMsg ->
             let
-                ( loginScreen, cmd, info ) =
-                    LoginScreen.update subMsg model.loginScreen
+                ( loggedOut, cmd, info ) =
+                    LOUpdate.update subMsg model.loggedOut
             in
                 let
                     authStatus =
@@ -60,11 +63,11 @@ update msg ({ loginScreen } as model) =
                                 ( Cmd.none, Cmd.none )
                 in
                     ( { model
-                        | loginScreen = loginScreen
+                        | loggedOut = loggedOut
                         , authStatus = authStatus
                       }
                     , Cmd.batch
-                        [ Cmd.map LoginMsg cmd
+                        [ Cmd.map LoggedOutMsg cmd
                         , Cmd.map UserMsg fetchMessages
                         , Cmd.map UserMsg fetchMyUser
                         ]
@@ -75,7 +78,7 @@ update msg ({ loginScreen } as model) =
                 UserHome.Logout ->
                     ( { model
                         | authStatus = LoggedOut
-                        , loginScreen = LoginScreen.initialModel
+                        , loggedOut = LOModel.emptyModel
                       }
                     , Cmd.none
                     )
@@ -103,7 +106,7 @@ view model =
             Html.App.map UserMsg (UserHome.view model.userHome info)
 
         LoggedOut ->
-            Html.App.map LoginMsg (LoginScreen.view model.loginScreen)
+            Html.App.map LoggedOutMsg (LOView.view model.loggedOut)
 
 
 main : Program Never
