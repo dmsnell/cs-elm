@@ -68,11 +68,17 @@ update msg model =
         FetchMeLoaded result ->
             case result of
                 Ok me ->
-                    ( { model
-                        | loggedIn = LIUpdate.setMe model.loggedIn me
-                      }
-                    , Cmd.none
-                    )
+                    case model.authStatus of
+                        LoggedIn loginInfo ->
+                            ( { model
+                                | loggedIn = LIUpdate.setMe model.loggedIn me
+                              }
+                            , fetchConversations loginInfo me.id
+                                |> Task.perform FetchConversations FetchConversations
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 Err error ->
                     ( model, Cmd.none )
@@ -91,17 +97,14 @@ update msg model =
                             Nothing ->
                                 LoggedOut
 
-                    ( fetchMyUser, fetchConversationList ) =
+                    fetchMyUser =
                         case info of
                             Just loginInfo ->
-                                ( fetchMe loginInfo
+                                fetchMe loginInfo
                                     |> Task.perform FetchMeFailed FetchMeLoaded
-                                , fetchConversations loginInfo
-                                    |> Task.perform FetchConversations FetchConversations
-                                )
 
                             Nothing ->
-                                ( Cmd.none, Cmd.none )
+                                Cmd.none
                 in
                     ( { model
                         | loggedOut = loggedOut
@@ -110,7 +113,6 @@ update msg model =
                     , Cmd.batch
                         [ Cmd.map LoggedOutMsg cmd
                         , fetchMyUser
-                        , fetchConversationList
                         ]
                     )
 
