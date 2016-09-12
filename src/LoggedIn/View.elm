@@ -18,7 +18,7 @@ view model info =
             [ h1 [] [ text <| toString model.activeSection ]
             , case model.activeSection of
                 SectionMessages ->
-                    SectionMessage.view model.conversations model.selectedConversation model.users model.myUserId
+                    SectionMessage.view model.conversations model.selectedConversation model.newMessages model.users model.myUserId
 
                 _ ->
                     div [] [ text "No content yet" ]

@@ -1,13 +1,17 @@
 module LoggedIn.Messages exposing (..)
 
+import Models.Message exposing (Message)
+
 
 type Msg
     = Logout
     | SelectConversation Int
     | SelectSection SiteSection
-    | SubmitMessage
+    | SubmitMessage Int
+    | SubmitMessageFailed String
+    | SubmitMessageLoaded (Result String Message)
     | UnselectConversation
-    | UpdateMessage String
+    | UpdateMessage Int String
 
 
 type SiteSection

@@ -11,7 +11,7 @@ type alias Conversation =
     { id : Int
     , title : String
     , dateCreated : Date
-    , messages : List Message
+    , messages : Dict Int Message
     , leftUserId : Int
     , rightUserId : Int
     }
@@ -22,7 +22,7 @@ emptyConversation =
     { id = 0
     , title = ""
     , dateCreated = fromParts 2000 Date.Jan 1 0 0 0 0
-    , messages = []
+    , messages = Dict.empty
     , leftUserId = 0
     , rightUserId = 0
     }

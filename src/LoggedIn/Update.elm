@@ -1,11 +1,14 @@
 module LoggedIn.Update exposing (..)
 
 import Dict exposing (Dict)
+import Task
+import Encoders.NewMessage exposing (encodeNewMessage)
 import LoggedIn.Messages exposing (..)
 import LoggedIn.Model exposing (..)
 import Models.Conversation exposing (Conversation)
 import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
+import Tasks.Messages exposing (sendNewMessage)
 
 
 update : Msg -> Model -> LoginInfo -> ( Model, Cmd Msg )
@@ -19,6 +22,58 @@ update msg model info =
 
         UnselectConversation ->
             ( { model | selectedConversation = Nothing }, Cmd.none )
+
+        UpdateMessage conversationId text ->
+            ( { model
+                | newMessages = Dict.insert conversationId text model.newMessages
+              }
+            , Cmd.none
+            )
+
+        SubmitMessage conversationId ->
+            let
+                message =
+                    Dict.get conversationId model.newMessages
+            in
+                case message of
+                    Just content ->
+                        let
+                            newMessage =
+                                encodeNewMessage conversationId model.myUserId content
+                        in
+                            ( model, Task.perform SubmitMessageFailed SubmitMessageLoaded (sendNewMessage info newMessage) )
+
+                    Nothing ->
+                        ( model, Cmd.none )
+
+        SubmitMessageFailed error ->
+            ( model, Cmd.none )
+
+        SubmitMessageLoaded result ->
+            case result of
+                Ok message ->
+                    let
+                        conversation =
+                            Dict.get message.conversationId model.conversations
+                                |> Maybe.map (\c -> ({ c | messages = Dict.insert message.id message c.messages }))
+
+                        conversations =
+                            case conversation of
+                                Just c ->
+                                    Dict.insert c.id c model.conversations
+
+                                Nothing ->
+                                    model.conversations
+                    in
+                        ( { model
+                            | newMessages = Dict.remove message.conversationId model.newMessages
+                            , conversations = conversations
+                          }
+                        , Cmd.none
+                        )
+
+                Err error ->
+                    ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )

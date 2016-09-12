@@ -18,7 +18,11 @@ type alias ConversationTask =
 fetchConversations : LoginInfo -> ConversationTask
 fetchConversations loginInfo =
     { verb = "GET"
-    , headers = [ ( "Authorization", "Basic:api:" ++ loginInfo.apiKey ) ]
+    , headers =
+        [ ( "Authorization", "Basic:api:" ++ loginInfo.apiKey )
+        , ( "Content-Type", "application/json;charset=UTF-8" )
+        , ( "Accept", "application/json" )
+        ]
     , url = Http.url "https://app.communityshare.us/api/conversation" [ ( "user_id", "976" ) ]
     , body = Http.empty
     }
@@ -32,7 +36,7 @@ apiToConversation { id, title, dateCreated, messages, userA, userB } =
     { id = id
     , title = title
     , dateCreated = dateCreated
-    , messages = List.map apiToMessage messages
+    , messages = List.map apiToMessage messages |> List.map (\m -> ( m.id, m )) |> Dict.fromList
     , leftUserId = userA.id
     , rightUserId = userB.id
     }
