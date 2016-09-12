@@ -1,13 +1,15 @@
 module LoggedIn.Messages exposing (..)
 
+import Date exposing (Date)
 import Models.Message exposing (Message)
 
 
 type Msg
     = Logout
+    | GetDateAndThen (Date -> Msg)
     | SelectConversation Int
     | SelectSection SiteSection
-    | SubmitMessage Int
+    | SubmitMessage Int Date
     | SubmitMessageFailed String
     | SubmitMessageLoaded (Result String Message)
     | UnselectConversation

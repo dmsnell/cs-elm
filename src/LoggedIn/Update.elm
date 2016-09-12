@@ -1,5 +1,7 @@
 module LoggedIn.Update exposing (..)
 
+import Basics.Extra exposing (never)
+import Date exposing (now)
 import Dict exposing (Dict)
 import Task
 import Encoders.NewMessage exposing (encodeNewMessage)
@@ -14,6 +16,9 @@ import Tasks.Messages exposing (sendNewMessage)
 update : Msg -> Model -> LoginInfo -> ( Model, Cmd Msg )
 update msg model info =
     case msg of
+        GetDateAndThen action ->
+            ( model, Task.perform never action now )
+
         SelectConversation id ->
             ( { model | selectedConversation = Just id }, Cmd.none )
 
@@ -30,7 +35,7 @@ update msg model info =
             , Cmd.none
             )
 
-        SubmitMessage conversationId ->
+        SubmitMessage conversationId date ->
             let
                 message =
                     Dict.get conversationId model.newMessages
@@ -39,9 +44,13 @@ update msg model info =
                     Just content ->
                         let
                             newMessage =
-                                encodeNewMessage conversationId model.myUserId content
+                                encodeNewMessage conversationId model.myUserId content date
+                                    |> Debug.log "New Message"
+
+                            task =
+                                Task.perform SubmitMessageFailed SubmitMessageLoaded (sendNewMessage info newMessage)
                         in
-                            ( model, Task.perform SubmitMessageFailed SubmitMessageLoaded (sendNewMessage info newMessage) )
+                            ( model, task )
 
                     Nothing ->
                         ( model, Cmd.none )

@@ -13,11 +13,11 @@ type alias NewMessage =
     }
 
 
-encodeNewMessage : Int -> Int -> String -> String
-encodeNewMessage conversationId senderUserId content =
+encodeNewMessage : Int -> Int -> String -> Date -> String
+encodeNewMessage conversationId senderUserId content date =
     { content = content
     , conversationId = conversationId
-    , dateCreated = (fromParts 2000 Date.Jan 1 0 0 0 0)
+    , dateCreated = date
     , senderId = senderUserId
     }
         |> newMessage
@@ -29,6 +29,6 @@ newMessage { content, conversationId, dateCreated, senderId } =
     object
         [ ( "content", string content )
         , ( "conversation_id", int conversationId )
-        , ( "date_created", string <| "2016-09-12T02:00:34.765Z" )
+        , ( "date_created", string <| toUtcIsoString dateCreated )
         , ( "sender_user_id", int senderId )
         ]
