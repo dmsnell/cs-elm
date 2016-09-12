@@ -4,13 +4,12 @@ import Basics.Extra exposing (never)
 import Date exposing (now)
 import Dict exposing (Dict)
 import Task
-import Encoders.NewMessage exposing (encodeNewMessage)
 import LoggedIn.Messages exposing (..)
 import LoggedIn.Model exposing (..)
+import LoggedIn.UpdateMessages exposing (..)
 import Models.Conversation exposing (Conversation)
 import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
-import Tasks.Messages exposing (sendNewMessage)
 
 
 update : Msg -> Model -> LoginInfo -> ( Model, Cmd Msg )
@@ -18,6 +17,9 @@ update msg model info =
     case msg of
         GetDateAndThen action ->
             ( model, Task.perform never action now )
+
+        Logout ->
+            ( model, Cmd.none )
 
         SelectConversation id ->
             ( { model | selectedConversation = Just id }, Cmd.none )
@@ -36,61 +38,13 @@ update msg model info =
             )
 
         SubmitMessage conversationId date ->
-            let
-                message =
-                    Dict.get conversationId model.newMessages
-            in
-                case message of
-                    Just content ->
-                        let
-                            newMessage =
-                                encodeNewMessage conversationId model.myUserId content date
-                        in
-                            ( { model
-                                | newMessages = Dict.insert conversationId "Sending…" model.newMessages
-                              }
-                            , sendNewMessage info newMessage
-                                |> Task.perform (SubmitMessageFailed conversationId content) SubmitMessageLoaded
-                            )
-
-                    Nothing ->
-                        ( model, Cmd.none )
+            updateSubmitMessage model info conversationId date
 
         SubmitMessageFailed conversationId previousContent error ->
-            ( { model
-                | newMessages = Dict.insert conversationId previousContent model.newMessages
-              }
-            , Cmd.none
-            )
+            updateSubmitMessageFailed model conversationId previousContent error
 
         SubmitMessageLoaded result ->
-            case result of
-                Ok message ->
-                    let
-                        conversation =
-                            Dict.get message.conversationId model.conversations
-                                |> Maybe.map (\c -> ({ c | messages = Dict.insert message.id message c.messages }))
-
-                        conversations =
-                            case conversation of
-                                Just c ->
-                                    Dict.insert c.id c model.conversations
-
-                                Nothing ->
-                                    model.conversations
-                    in
-                        ( { model
-                            | newMessages = Dict.remove message.conversationId model.newMessages
-                            , conversations = conversations
-                          }
-                        , Cmd.none
-                        )
-
-                Err error ->
-                    ( model, Cmd.none )
-
-        _ ->
-            ( model, Cmd.none )
+            updateSubmitMessageLoaded model result
 
 
 setMe : Model -> User -> Model
