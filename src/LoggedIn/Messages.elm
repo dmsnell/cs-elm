@@ -10,7 +10,7 @@ type Msg
     | SelectConversation Int
     | SelectSection SiteSection
     | SubmitMessage Int Date
-    | SubmitMessageFailed String
+    | SubmitMessageFailed Int String String
     | SubmitMessageLoaded (Result String Message)
     | UnselectConversation
     | UpdateMessage Int String

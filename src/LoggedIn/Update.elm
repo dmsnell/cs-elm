@@ -45,18 +45,23 @@ update msg model info =
                         let
                             newMessage =
                                 encodeNewMessage conversationId model.myUserId content date
-                                    |> Debug.log "New Message"
-
-                            task =
-                                Task.perform SubmitMessageFailed SubmitMessageLoaded (sendNewMessage info newMessage)
                         in
-                            ( model, task )
+                            ( { model
+                                | newMessages = Dict.insert conversationId "Sending…" model.newMessages
+                              }
+                            , sendNewMessage info newMessage
+                                |> Task.perform (SubmitMessageFailed conversationId content) SubmitMessageLoaded
+                            )
 
                     Nothing ->
                         ( model, Cmd.none )
 
-        SubmitMessageFailed error ->
-            ( model, Cmd.none )
+        SubmitMessageFailed conversationId previousContent error ->
+            ( { model
+                | newMessages = Dict.insert conversationId previousContent model.newMessages
+              }
+            , Cmd.none
+            )
 
         SubmitMessageLoaded result ->
             case result of
