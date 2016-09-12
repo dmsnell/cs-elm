@@ -77,7 +77,7 @@ update msg model =
                                 |> Task.perform FetchConversations FetchConversations
                             )
 
-                        _ ->
+                        LoggedOut ->
                             ( model, Cmd.none )
 
                 Err error ->
@@ -90,21 +90,14 @@ update msg model =
             in
                 let
                     authStatus =
-                        case info of
-                            Just loginInfo ->
-                                LoggedIn loginInfo
-
-                            Nothing ->
-                                LoggedOut
+                        info
+                            |> Maybe.map LoggedIn
+                            |> Maybe.withDefault LoggedOut
 
                     fetchMyUser =
-                        case info of
-                            Just loginInfo ->
-                                fetchMe loginInfo
-                                    |> Task.perform FetchMeFailed FetchMeLoaded
-
-                            Nothing ->
-                                Cmd.none
+                        info
+                            |> Maybe.map (fetchMe >> Task.perform FetchMeFailed FetchMeLoaded)
+                            |> Maybe.withDefault Cmd.none
                 in
                     ( { model
                         | loggedOut = loggedOut
