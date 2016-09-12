@@ -66,22 +66,22 @@ update msg model =
             ( model, Cmd.none )
 
         FetchMeLoaded result ->
-            case result of
-                Ok me ->
-                    case model.authStatus of
-                        LoggedIn loginInfo ->
-                            ( { model
-                                | loggedIn = LIUpdate.setMe model.loggedIn me
-                              }
-                            , fetchConversations loginInfo me.id
-                                |> Task.perform FetchConversations FetchConversations
-                            )
+            result
+                |> Result.map
+                    (\me ->
+                        case model.authStatus of
+                            LoggedIn loginInfo ->
+                                ( { model
+                                    | loggedIn = LIUpdate.setMe model.loggedIn me
+                                  }
+                                , fetchConversations loginInfo me.id
+                                    |> Task.perform FetchConversations FetchConversations
+                                )
 
-                        LoggedOut ->
-                            ( model, Cmd.none )
-
-                Err error ->
-                    ( model, Cmd.none )
+                            LoggedOut ->
+                                ( model, Cmd.none )
+                    )
+                |> Result.withDefault ( model, Cmd.none )
 
         LoggedOutMsg subMsg ->
             let
