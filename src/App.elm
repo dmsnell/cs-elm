@@ -1,18 +1,30 @@
 module App exposing (main)
 
+import Dict exposing (Dict)
 import Html exposing (div, text)
 import Html.App
+import Task exposing (Task)
+import LoggedIn.Messages as LIMsg
+import LoggedIn.Model as LIModel
+import LoggedIn.Update as LIUpdate
+import LoggedIn.View as LIView
 import LoggedOut.Messages as LOMsg
 import LoggedOut.Model as LOModel
 import LoggedOut.Update as LOUpdate
 import LoggedOut.View as LOView
-import Pages.UserHome as UserHome
+import Models.Conversation exposing (Conversation)
+import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
+import Tasks.FetchConversations exposing (fetchConversations)
+import Tasks.FetchMe exposing (fetchMe)
 
 
 type Msg
     = LoggedOutMsg LOMsg.Msg
-    | UserMsg UserHome.Msg
+    | LoggedInMsg LIMsg.Msg
+    | FetchConversations (Result String ( Dict Int Conversation, Dict Int User ))
+    | FetchMeFailed String
+    | FetchMeLoaded (Result String User)
 
 
 type AuthenticationStatus
@@ -23,7 +35,7 @@ type AuthenticationStatus
 type alias Model =
     { authStatus : AuthenticationStatus
     , loggedOut : LOModel.Model
-    , userHome : UserHome.Model
+    , loggedIn : LIModel.Model
     }
 
 
@@ -31,13 +43,40 @@ initialModel : Model
 initialModel =
     { authStatus = LoggedOut
     , loggedOut = LOModel.emptyModel
-    , userHome = UserHome.initialModel
+    , loggedIn = LIModel.emptyModel
     }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        FetchConversations response ->
+            case response of
+                Ok ( conversations, users ) ->
+                    ( { model
+                        | loggedIn = LIUpdate.mergeConversations model.loggedIn conversations users
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        FetchMeFailed error ->
+            ( model, Cmd.none )
+
+        FetchMeLoaded result ->
+            case result of
+                Ok me ->
+                    ( { model
+                        | loggedIn = LIUpdate.setMe model.loggedIn me
+                      }
+                    , Cmd.none
+                    )
+
+                Err error ->
+                    ( model, Cmd.none )
+
         LoggedOutMsg subMsg ->
             let
                 ( loggedOut, cmd, info ) =
@@ -52,11 +91,13 @@ update msg model =
                             Nothing ->
                                 LoggedOut
 
-                    ( fetchMyUser, fetchMessages ) =
+                    ( fetchMyUser, fetchConversationList ) =
                         case info of
                             Just loginInfo ->
-                                ( UserHome.fetchMessages loginInfo
-                                , UserHome.fetchMyUser loginInfo
+                                ( fetchMe loginInfo
+                                    |> Task.perform FetchMeFailed FetchMeLoaded
+                                , fetchConversations loginInfo
+                                    |> Task.perform FetchConversations FetchConversations
                                 )
 
                             Nothing ->
@@ -68,14 +109,14 @@ update msg model =
                       }
                     , Cmd.batch
                         [ Cmd.map LoggedOutMsg cmd
-                        , Cmd.map UserMsg fetchMessages
-                        , Cmd.map UserMsg fetchMyUser
+                        , fetchMyUser
+                        , fetchConversationList
                         ]
                     )
 
-        UserMsg subMsg ->
+        LoggedInMsg subMsg ->
             case subMsg of
-                UserHome.Logout ->
+                LIMsg.Logout ->
                     ( { model
                         | authStatus = LoggedOut
                         , loggedOut = LOModel.emptyModel
@@ -93,17 +134,17 @@ update msg model =
                                 LoggedOut ->
                                     { apiKey = "", email = "" }
 
-                        ( userHome, cmd ) =
-                            UserHome.update subMsg model.userHome loginInfo
+                        ( loggedIn, cmd ) =
+                            LIUpdate.update subMsg model.loggedIn loginInfo
                     in
-                        ( { model | userHome = userHome }, Cmd.map UserMsg cmd )
+                        ( { model | loggedIn = loggedIn }, Cmd.map LoggedInMsg cmd )
 
 
 view : Model -> Html.Html Msg
 view model =
     case model.authStatus of
         LoggedIn info ->
-            Html.App.map UserMsg (UserHome.view model.userHome info)
+            Html.App.map LoggedInMsg (LIView.view model.loggedIn info)
 
         LoggedOut ->
             Html.App.map LoggedOutMsg (LOView.view model.loggedOut)

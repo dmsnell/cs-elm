@@ -5,34 +5,9 @@ import Html exposing (button, div, ul, li, p, text, textarea)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Components.MessageDetail as MessageDetail
+import LoggedIn.Messages exposing (..)
 import Models.Conversation exposing (Conversation)
 import Models.User exposing (User)
-
-
-type Msg
-    = UpdateMessage String
-    | SubmitMessage
-
-
-type alias Model =
-    { newMessage : String
-    }
-
-
-emptyModel : Model
-emptyModel =
-    { newMessage = ""
-    }
-
-
-update : Cmd msg -> Msg -> Model -> ( Model, Cmd msg )
-update sendNewMessage msg model =
-    case msg of
-        UpdateMessage text ->
-            ( { model | newMessage = text }, Cmd.none )
-
-        SubmitMessage ->
-            ( { model | newMessage = "Submitting…" }, sendNewMessage )
 
 
 newMessageForm : String -> Html.Html Msg
@@ -63,8 +38,8 @@ newMessageForm newMessage =
         ]
 
 
-view : Model -> Conversation -> Int -> User -> User -> Html.Html Msg
-view model { title, messages } myUserId left right =
+view : Conversation -> Int -> User -> User -> Html.Html Msg
+view { title, messages } myUserId left right =
     div []
         [ div
             [ style
@@ -74,7 +49,7 @@ view model { title, messages } myUserId left right =
                 ]
             ]
             [ text title ]
-        , newMessageForm model.newMessage
+        , newMessageForm ""
         , div []
             (messages
                 |> List.sortBy (.dateCreated >> Date.toTime)

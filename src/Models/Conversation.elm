@@ -28,8 +28,8 @@ emptyConversation =
     }
 
 
-users : Int -> Dict Int User -> Conversation -> ( User, User )
-users myUserId userDict { leftUserId, rightUserId } =
+conversationUsers : Int -> Dict Int User -> Conversation -> ( User, User )
+conversationUsers myUserId userDict { leftUserId, rightUserId } =
     let
         involvesMe =
             List.member myUserId [ leftUserId, rightUserId ]

@@ -1,5 +1,7 @@
 module Models.User exposing (..)
 
+import Dict exposing (Dict)
+
 
 type SiteRole
     = Guest

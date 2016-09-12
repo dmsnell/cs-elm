@@ -4,20 +4,17 @@ import Dict exposing (Dict)
 import Html exposing (div, img, p, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import LoggedIn.Messages exposing (..)
 import Models.Conversation as Conversation
-import Models.Conversation exposing (Conversation)
+import Models.Conversation exposing (Conversation, conversationUsers)
 import Models.User exposing (User, emptyUser)
-
-
-type Msg
-    = SelectConversation Int
 
 
 view : Int -> Dict Int User -> Conversation -> Html.Html Msg
 view myUserId users ({ id, title, messages } as conversation) =
     let
         ( left, right ) =
-            Conversation.users myUserId users conversation
+            conversationUsers myUserId users conversation
 
         involvesMe =
             List.member myUserId [ left.id, right.id ]
