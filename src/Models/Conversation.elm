@@ -29,35 +29,29 @@ emptyConversation =
 
 
 conversationUsers : Int -> Dict Int User -> Conversation -> ( User, User )
-conversationUsers myUserId userDict { leftUserId, rightUserId } =
+conversationUsers myUserId users { leftUserId, rightUserId } =
+    {-
+       Each conversation should show one's own user as the left user
+       if indeed the user is part of the conversation. This function
+       will make that determination and return the appropriate results,
+       replacing the user ids from the conversation data with real users
+    -}
     let
-        involvesMe =
-            List.member myUserId [ leftUserId, rightUserId ]
-
-        leftId =
-            if involvesMe then
-                myUserId
-            else
-                leftUserId
-
-        rightId =
-            if involvesMe then
-                (if myUserId == leftUserId then
-                    rightUserId
-                 else
-                    leftUserId
-                )
-            else
-                rightUserId
-
-        left =
-            userDict
-                |> Dict.get leftId
-                |> Maybe.withDefault emptyUser
-
-        right =
-            userDict
-                |> Dict.get rightId
-                |> Maybe.withDefault emptyUser
+        sorted =
+            [ leftUserId, rightUserId ]
+                |> List.sortBy
+                    (\id ->
+                        if id == myUserId then
+                            0
+                        else
+                            1
+                    )
+                |> List.map (flip Dict.get users)
+                |> List.map (Maybe.withDefault emptyUser)
     in
-        ( left, right )
+        case sorted of
+            [ left, right ] ->
+                ( left, right )
+
+            _ ->
+                ( emptyUser, emptyUser )
