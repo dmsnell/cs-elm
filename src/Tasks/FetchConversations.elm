@@ -15,15 +15,15 @@ type alias ConversationTask =
     Task (Result String ( Dict Int Conversation, Dict Int User )) (Result String ( Dict Int Conversation, Dict Int User ))
 
 
-fetchConversations : LoginInfo -> ConversationTask
-fetchConversations loginInfo =
+fetchConversations : LoginInfo -> Int -> ConversationTask
+fetchConversations loginInfo myUserId =
     { verb = "GET"
     , headers =
         [ ( "Authorization", "Basic:api:" ++ loginInfo.apiKey )
         , ( "Content-Type", "application/json;charset=UTF-8" )
         , ( "Accept", "application/json" )
         ]
-    , url = Http.url "https://app.communityshare.us/api/conversation" [ ( "user_id", "976" ) ]
+    , url = Http.url "https://app.communityshare.us/api/conversation" [ ( "user_id", toString myUserId ) ]
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings

@@ -66,16 +66,22 @@ update msg model =
             ( model, Cmd.none )
 
         FetchMeLoaded result ->
-            case result of
-                Ok me ->
-                    ( { model
-                        | loggedIn = LIUpdate.setMe model.loggedIn me
-                      }
-                    , Cmd.none
-                    )
+            result
+                |> Result.map
+                    (\me ->
+                        case model.authStatus of
+                            LoggedIn loginInfo ->
+                                ( { model
+                                    | loggedIn = LIUpdate.setMe model.loggedIn me
+                                  }
+                                , fetchConversations loginInfo me.id
+                                    |> Task.perform FetchConversations FetchConversations
+                                )
 
-                Err error ->
-                    ( model, Cmd.none )
+                            LoggedOut ->
+                                ( model, Cmd.none )
+                    )
+                |> Result.withDefault ( model, Cmd.none )
 
         LoggedOutMsg subMsg ->
             let
@@ -84,24 +90,14 @@ update msg model =
             in
                 let
                     authStatus =
-                        case info of
-                            Just loginInfo ->
-                                LoggedIn loginInfo
+                        info
+                            |> Maybe.map LoggedIn
+                            |> Maybe.withDefault LoggedOut
 
-                            Nothing ->
-                                LoggedOut
-
-                    ( fetchMyUser, fetchConversationList ) =
-                        case info of
-                            Just loginInfo ->
-                                ( fetchMe loginInfo
-                                    |> Task.perform FetchMeFailed FetchMeLoaded
-                                , fetchConversations loginInfo
-                                    |> Task.perform FetchConversations FetchConversations
-                                )
-
-                            Nothing ->
-                                ( Cmd.none, Cmd.none )
+                    fetchMyUser =
+                        info
+                            |> Maybe.map (fetchMe >> Task.perform FetchMeFailed FetchMeLoaded)
+                            |> Maybe.withDefault Cmd.none
                 in
                     ( { model
                         | loggedOut = loggedOut
@@ -110,7 +106,6 @@ update msg model =
                     , Cmd.batch
                         [ Cmd.map LoggedOutMsg cmd
                         , fetchMyUser
-                        , fetchConversationList
                         ]
                     )
 
