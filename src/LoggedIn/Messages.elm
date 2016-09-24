@@ -17,7 +17,8 @@ type Msg
 
 
 type SiteSection
-    = SectionSearch
+    = SectionMatches
     | SectionMessages
+    | SectionProfile
+    | SectionSearch
     | SectionShares
-    | SectionMatches

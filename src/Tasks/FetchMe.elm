@@ -6,6 +6,7 @@ import Task exposing (Task)
 import Decoders.User exposing (decodeUser)
 import Models.User exposing (User, emptyUser)
 import Tasks.AuthenticateUser exposing (LoginInfo)
+import Tasks.Helpers exposing (requestUrl)
 
 
 type alias MeFetcher =
@@ -16,7 +17,7 @@ fetchMe : LoginInfo -> MeFetcher
 fetchMe { email, apiKey } =
     { verb = "GET"
     , headers = [ ( "Authorization", "Basic:api:" ++ apiKey ) ]
-    , url = "https://app.communityshare.us/api/userbyemail/" ++ email
+    , url = requestUrl ("/api/userbyemail/" ++ email)
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings

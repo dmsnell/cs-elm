@@ -4,6 +4,7 @@ import Http
 import Json.Decode
 import Task exposing (Task)
 import Decoders.AuthenticationResponse exposing (decodeAuthenticationResponse)
+import Tasks.Helpers exposing (requestUrl)
 
 
 type alias AuthenticationTask =
@@ -26,7 +27,7 @@ requestLoginToken : LoginCredentials -> AuthenticationTask
 requestLoginToken { email, password } =
     { verb = "GET"
     , headers = [ ( "Authorization", "Basic:" ++ email ++ ":" ++ password ) ]
-    , url = "https://app.communityshare.us/api/requestapikey"
+    , url = requestUrl "/api/requestapikey"
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings

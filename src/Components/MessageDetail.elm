@@ -64,6 +64,7 @@ view myUserId left right { content, dateCreated, senderId } =
                           , "1em"
                           )
                         , ( "width", "32px" )
+                        , ( "border-radius", "16px" )
                         ]
                     ]
                     []

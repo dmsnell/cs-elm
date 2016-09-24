@@ -7,6 +7,7 @@ import Decoders.Conversation exposing (decodeMessage)
 import Models.Message exposing (Message)
 import Tasks.AuthenticateUser exposing (LoginInfo)
 import Tasks.FetchConversations exposing (apiToMessage)
+import Tasks.Helpers exposing (requestUrl)
 
 
 sendNewMessage : LoginInfo -> String -> Task String (Result String Message)
@@ -16,7 +17,7 @@ sendNewMessage { email, apiKey } message =
         [ ( "Authorization", "Basic:api:" ++ apiKey )
         , ( "Content-Type", "application/json;charset=UTF-8" )
         ]
-    , url = "https://app.communityshare.us/api/message"
+    , url = requestUrl "/api/message"
     , body = Http.string message
     }
         |> Http.send Http.defaultSettings

@@ -9,6 +9,7 @@ import Models.Conversation exposing (Conversation)
 import Models.Message exposing (Message)
 import Models.User exposing (User)
 import Tasks.AuthenticateUser exposing (LoginInfo)
+import Tasks.Helpers exposing (requestUrl)
 
 
 type alias ConversationTask =
@@ -23,7 +24,7 @@ fetchConversations loginInfo myUserId =
         , ( "Content-Type", "application/json;charset=UTF-8" )
         , ( "Accept", "application/json" )
         ]
-    , url = Http.url "https://app.communityshare.us/api/conversation" [ ( "user_id", toString myUserId ) ]
+    , url = Http.url (requestUrl "/api/conversation") [ ( "user_id", toString myUserId ) ]
     , body = Http.empty
     }
         |> Http.send Http.defaultSettings
