@@ -35,7 +35,9 @@ newMessageForm conversationId newMessage =
             ]
             []
         , div [ style [ ( "text-align", "right" ) ] ]
-            [ button [ onClick (GetDateAndThen (SubmitMessage conversationId)) ] [ text "Send Message" ]
+            [ button
+                [ onClick (GetDateAndThen (SubmitMessage conversationId)) ]
+                [ text "Send Message" ]
             ]
         ]
 
