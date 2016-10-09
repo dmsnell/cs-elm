@@ -35,7 +35,7 @@ newMessageForm conversationId newMessage =
             ]
             []
         , div [ style [ ( "text-align", "right" ) ] ]
-            [ button [ onClick (GetDateAndThen (\date -> (SubmitMessage conversationId date))) ] [ text "Send Message" ]
+            [ button [ onClick (GetDateAndThen (SubmitMessage conversationId)) ] [ text "Send Message" ]
             ]
         ]
 
