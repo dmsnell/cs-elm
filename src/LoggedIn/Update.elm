@@ -47,17 +47,14 @@ update msg model info =
             updateSubmitMessageLoaded model result
 
 
-setMe : Model -> User -> Model
-setMe model user =
-    { model
-        | myUserId = user.id
-        , users = Dict.insert user.id user model.users
-    }
-
-
 mergeConversations : Model -> Dict Int Conversation -> Dict Int User -> Model
 mergeConversations model conversations users =
     { model
         | conversations = Dict.union model.conversations conversations
         , users = Dict.union model.users users
     }
+
+
+addUser : Model -> User -> Model
+addUser model user =
+    { model | users = Dict.insert user.id user model.users }

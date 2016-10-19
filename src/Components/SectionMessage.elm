@@ -10,8 +10,8 @@ import Models.Conversation exposing (Conversation, conversationUsers, emptyConve
 import Models.User exposing (User)
 
 
-view : Dict Int Conversation -> Maybe Int -> Dict Int String -> Dict Int User -> Int -> Html.Html Msg
-view conversations selectedConversation newMessages users myUserId =
+view : Dict Int Conversation -> Maybe Int -> Dict Int String -> Dict Int User -> User -> Html.Html Msg
+view conversations selectedConversation newMessages users me =
     if Dict.size conversations == 0 then
         div []
             [ text "Loading…" ]
@@ -24,7 +24,7 @@ view conversations selectedConversation newMessages users myUserId =
                             |> Maybe.withDefault emptyConversation
 
                     ( left, right ) =
-                        conversationUsers myUserId users conversation
+                        conversationUsers me.id users conversation
 
                     newMessage =
                         Dict.get conversation.id newMessages
@@ -32,13 +32,13 @@ view conversations selectedConversation newMessages users myUserId =
                 in
                     div []
                         [ button [ onClick UnselectConversation ] [ text "Back" ]
-                        , Detail.view conversation newMessage myUserId left right
+                        , Detail.view conversation newMessage me left right
                         ]
 
             Nothing ->
                 div []
                     [ conversations
                         |> Dict.values
-                        |> List.map (Summary.view myUserId users)
+                        |> List.map (Summary.view me users)
                         |> div []
                     ]

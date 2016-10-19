@@ -21,7 +21,7 @@ updateSubmitMessage model info conversationId date =
             Just content ->
                 let
                     newMessage =
-                        encodeNewMessage conversationId model.myUserId content date
+                        encodeNewMessage conversationId info.me.id content date
                 in
                     ( { model
                         | newMessages = Dict.insert conversationId "Sending…" model.newMessages

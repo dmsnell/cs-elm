@@ -10,7 +10,7 @@ import Tasks.FetchConversations exposing (apiToMessage)
 
 
 sendNewMessage : LoginInfo -> String -> Task String (Result String Message)
-sendNewMessage { email, apiKey } message =
+sendNewMessage { apiKey } message =
     { verb = "POST"
     , headers =
         [ ( "Authorization", "Basic:api:" ++ apiKey )

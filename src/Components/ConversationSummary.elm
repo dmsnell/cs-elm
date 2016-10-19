@@ -10,14 +10,14 @@ import Models.Conversation exposing (Conversation, conversationUsers)
 import Models.User exposing (User, emptyUser)
 
 
-view : Int -> Dict Int User -> Conversation -> Html.Html Msg
-view myUserId users ({ id, title, messages } as conversation) =
+view : User -> Dict Int User -> Conversation -> Html.Html Msg
+view me users ({ id, title, messages } as conversation) =
     let
         ( left, right ) =
-            conversationUsers myUserId users conversation
+            conversationUsers me.id users conversation
 
         involvesMe =
-            List.member myUserId [ left.id, right.id ]
+            List.member me.id [ left.id, right.id ]
 
         leftName =
             if involvesMe then

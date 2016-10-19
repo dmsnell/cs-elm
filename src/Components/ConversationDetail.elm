@@ -42,8 +42,8 @@ newMessageForm conversationId newMessage =
         ]
 
 
-view : Conversation -> String -> Int -> User -> User -> Html.Html Msg
-view { id, title, messages } newMessage myUserId left right =
+view : Conversation -> String -> User -> User -> User -> Html.Html Msg
+view { id, title, messages } newMessage me left right =
     div []
         [ div
             [ style
@@ -59,6 +59,6 @@ view { id, title, messages } newMessage myUserId left right =
                 |> Dict.values
                 |> List.sortBy (.dateCreated >> Date.toTime)
                 |> List.reverse
-                |> List.map (MessageDetail.view myUserId left right)
+                |> List.map (MessageDetail.view me.id left right)
             )
         ]

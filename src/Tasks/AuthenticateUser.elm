@@ -4,6 +4,7 @@ import Http
 import Json.Decode
 import Task exposing (Task)
 import Decoders.AuthenticationResponse exposing (decodeAuthenticationResponse)
+import Models.User exposing (User)
 
 
 type alias AuthenticationTask =
@@ -17,7 +18,7 @@ type alias LoginCredentials =
 
 
 type alias LoginInfo =
-    { email : String
+    { me : User
     , apiKey : String
     }
 
@@ -42,7 +43,7 @@ decodeResponse email json =
     in
         case decoded of
             Ok data ->
-                Ok <| LoginInfo email data.apiKey
+                Ok <| LoginInfo data.me data.apiKey
 
             Err error ->
                 Err <| error
