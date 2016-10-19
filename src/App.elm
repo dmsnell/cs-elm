@@ -106,19 +106,16 @@ update msg model =
                     )
 
                 _ ->
-                    let
-                        loginInfo =
-                            case model.authStatus of
-                                LoggedIn info ->
-                                    info
+                    case model.authStatus of
+                        LoggedIn info ->
+                            let
+                                ( loggedIn, cmd ) =
+                                    LIUpdate.update subMsg model.loggedIn info
+                            in
+                                ( { model | loggedIn = loggedIn }, Cmd.map LoggedInMsg cmd )
 
-                                LoggedOut ->
-                                    { apiKey = "", me = emptyUser }
-
-                        ( loggedIn, cmd ) =
-                            LIUpdate.update subMsg model.loggedIn loginInfo
-                    in
-                        ( { model | loggedIn = loggedIn }, Cmd.map LoggedInMsg cmd )
+                        LoggedOut ->
+                            ( model, Cmd.none )
 
 
 view : Model -> Html.Html Msg
